@@ -56,6 +56,16 @@
         export CALIPTRA_ROOT="$(git rev-parse --show-toplevel)"
         export ADAMSBRIDGE_ROOT="$CALIPTRA_ROOT/submodules/adams-bridge"
       '';
+      dvsimShellHook = commonShellHook + ''
+        # EDA simulators (e.g. Cadence's xrun) invoke a vendor-bundled gcc to compile C DPI
+        # sources, and do not reliably pick up openssl from the environment's standard
+        # compiler search paths. Export fixed env vars pointing at the openssl headers and
+        # libraries provided by this devshell so dvsim hjson can thread them to the
+        # simulator's C compiler as explicit -I/-L flags, making the build reproducible
+        # across host distros.
+        export OPENSSL_INCLUDE_DIR="${pkgs.openssl.dev}/include"
+        export OPENSSL_LIB_DIR="${pkgs.openssl.out}/lib"
+      '';
     in {
       devShells = rec {
         default = caliptra-dvsim;
@@ -65,8 +75,11 @@
             python_dvsim
           ]) ++ (with pkgs; [
             uv
+            # Needed by the AES DPI model's crypto.c (openssl/conf.h etc.); xrun also links -lcrypto.
+            openssl
+            openssl.dev
           ]);
-          shellHook = commonShellHook;
+          shellHook = dvsimShellHook;
         };
         caliptra-reg-gen = pkgs.mkShell {
           name = "caliptra-reg-gen";

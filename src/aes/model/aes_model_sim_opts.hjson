@@ -1,0 +1,38 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Additional build-time options for enabling the compilation of the C sources
+  // with DV simulators such as VCS and Xcelium.
+  aes_model_core: "lowrisc:model:aes:1.0"
+  aes_model_src_dir: "{eval_cmd} echo \"{aes_model_core}\" | tr ':' '_'"
+
+  // EDA simulators invoke a vendor-bundled gcc to compile C DPI sources, which does not pick up
+  // openssl from the environment's standard compiler search paths. OPENSSL_INCLUDE_DIR /
+  // OPENSSL_LIB_DIR are exported by the caliptra-dvsim devshell so the simulator build can locate
+  // openssl headers and libraries via explicit -I/-L flags.
+  //
+  // In an environment that is not under the dev-shell, these variables will be empty.
+  // Unfortunately, VCS isn't happy with bare -I or -L flags on the command line, so we have to use
+  // the sed command below which turns "foo" into "-Ifoo" and "" into "" (and similarly for -L).
+  openssl_include_dir_flag: "{eval_cmd} echo $OPENSSL_INCLUDE_DIR | sed -E 's/(.+)/-I\\1/'"
+  openssl_lib_dir_flag:     "{eval_cmd} echo $OPENSSL_LIB_DIR | sed -E 's/(.+)/-L\\1/'"
+
+  build_modes: [
+    {
+      name: vcs_aes_model_build_opts
+
+      build_opts: ["-CFLAGS -I{build_dir}/fusesoc-work/src/{aes_model_src_dir}",
+                   "{openssl_include_dir_flag}", "{openssl_lib_dir_flag}",
+                   "-lcrypto"]
+    }
+
+    {
+      name: xcelium_aes_model_build_opts
+      // See note for the vcs build_opts for an explanation of the -I and -L flags.
+      build_opts: ["-I{build_dir}/fusesoc-work/src/{aes_model_src_dir}",
+                   "{openssl_include_dir_flag}", "{openssl_lib_dir_flag}",
+                   "-lcrypto"]
+    }
+  ]
+}
