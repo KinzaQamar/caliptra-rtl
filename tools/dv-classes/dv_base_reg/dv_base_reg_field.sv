@@ -102,7 +102,7 @@ class dv_base_reg_field extends uvm_reg_field;
       this.m_original_access = access;
       is_intr_test_fld = !(uvm_re_match("intr_test*", get_parent().get_name()));
       shadowed_val = ~committed_val;
-    endfunction
+  endfunction
 
   // Set the mubi access mode. Must be called after configure() and before the parent block is
   // locked. Accepted values mirror the strings consumed in do_predict() ("W1S", "W1C", "W0C",
