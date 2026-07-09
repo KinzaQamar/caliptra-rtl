@@ -52,7 +52,9 @@ $REG_GEN $CALIPTRA_ROOT/src/sha256/data/sha256_reg.rdl                 \
     --emit-dv  --dv-output  $CALIPTRA_ROOT/src/sha256/dv/reg_model
 
 $REG_GEN $CALIPTRA_ROOT/src/sha3/data/sha3_reg.rdl                     \
-    --emit-rtl --rtl-output $CALIPTRA_ROOT/src/sha3/rtl/generated      \
+    --emit-rtl --rtl-output $CALIPTRA_ROOT/src/sha3/rtl/generated
+
+$REG_GEN $CALIPTRA_ROOT/src/sha3/data/sha3_ctrl_dv_reg.rdl             \
     --emit-dv  --dv-output  $CALIPTRA_ROOT/src/sha3/dv/reg_model
 
 $REG_GEN $CALIPTRA_ROOT/src/soc_ifc/data/mbox_csr.rdl                  \
@@ -83,7 +85,15 @@ $REG_GEN $CALIPTRA_ROOT/src/axi/data/axi_dma_reg.rdl                   \
 $REG_GEN $CALIPTRA_ROOT/src/aes/data/aes_clp_reg.rdl                   \
     --preload $KV_DEF                                                  \
     --emit-rtl --rtl-output $CALIPTRA_ROOT/src/aes/rtl/generated       \
+
+$REG_GEN $CALIPTRA_ROOT/src/aes/data/aes_dv_reg.rdl                    \
+    --preload $KV_DEF                                                  \
     --emit-dv  --dv-output  $CALIPTRA_ROOT/src/aes/dv/reg_model
+
+$REG_GEN $CALIPTRA_ROOT/src/csrng/data/csrng.rdl                       \
+    --emit-dv  --dv-output  $CALIPTRA_ROOT/src/csrng/dv/reg_model      \
+    --cov --cov-template-dir $CALIPTRA_ROOT/tools/templates/rdl/cov    \
+    --smp-template-dir $CALIPTRA_ROOT/tools/templates/rdl/smp 
 
 $REG_GEN $CALIPTRA_ROOT/src/libs/data/interrupt_regs.rdl               \
     --emit-rtl --rtl-output $CALIPTRA_ROOT/src/libs/rtl/generated      \
