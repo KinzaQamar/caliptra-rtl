@@ -35,6 +35,12 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   // the assertions will turn back on after the hw reset deasserted
   bit enable_asserts_in_hw_reset_rand_wr  = 1'b1;
 
+  // User can set the name of common seq to run directly without using $value$plusargs
+  string common_seq_type;
+
+  // CSR queues
+  dv_base_reg all_csrs[$];
+
   `uvm_object_new
 
   virtual function void set_handles();
@@ -288,4 +294,186 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual function uvm_sequence create_seq_by_name(string name);
     return dv_utils_pkg::create_seq_by_name(name);
   endfunction
+
+  task check_interrupts(bit [BUS_DW-1:0]  interrupts,
+                        bit               check_set,
+                        bit [BUS_DW-1:0]  clear = '1);
+    uvm_reg          csr_intr_state, csr_intr_enable;
+    bit [BUS_DW-1:0] act_pins;
+    bit [BUS_DW-1:0] exp_pins;
+    bit [BUS_DW-1:0] exp_intr_state;
+
+    if (cfg.under_reset) return;
+
+    act_pins = cfg.intr_vif.sample() & interrupts;
+    if (check_set) begin
+      csr_intr_enable = ral.get_dv_base_reg_by_name("intr_enable");
+      exp_pins = interrupts & csr_intr_enable.get_mirrored_value();
+      exp_intr_state = interrupts;
+    end else begin
+      exp_pins = '0;
+      exp_intr_state = ~interrupts;
+    end
+    `DV_CHECK_EQ(act_pins, exp_pins)
+    csr_intr_state = ral.get_dv_base_reg_by_name("intr_state");
+    csr_rd_check(.ptr(csr_intr_state), .compare_value(exp_intr_state), .compare_mask(interrupts));
+
+    if (check_set && |(interrupts & clear)) begin
+      csr_wr(.ptr(csr_intr_state), .value(interrupts & clear));
+    end
+  endtask
+
+  local function void disable_coverage_sample_for_csr_test();
+    `uvm_info(`gfn, "mubi reg coverage sampling is disabled as this is a CSR test", UVM_HIGH)
+    foreach (all_csrs[i]) begin
+      dv_base_reg_field fields[$];
+
+      all_csrs[i].get_dv_base_reg_fields(fields);
+      // assign null to all mubi_cov object, so that coverage sampling is skipped
+      foreach (fields[j]) fields[j].mubi_cov = null;
+    end
+  endfunction
+
+  local task run_seq_with_rand_reset_vseq(uvm_sequence seq,
+                                          int unsigned num_times,
+                                          int unsigned reset_delay_bound);
+    // Populate
+  endtask
+
+  local task run_same_csr_outstanding_vseq(int unsigned num_times);
+    // Populate
+  endtask
+
+  local task run_shadow_reg_errors(int unsigned num_times, bit en_csr_rw_seq = 0);
+    // Populate
+  endtask
+
+  local task run_mem_partial_access_vseq(int unsigned num_times);
+    // Populate
+  endtask
+
+  local task run_csr_mem_rw_with_rand_reset_vseq(int unsigned num_times);
+    // Populate
+  endtask
+
+  local task run_csr_mem_rw_vseq(int unsigned num_times);
+    // Populate
+  endtask
+
+  local task run_sec_cm_fi_vseq(int unsigned num_times);
+    // Populate
+  endtask
+
+  local task run_plusarg_vseq_with_rand_reset(int unsigned num_times);
+    string stress_seq_name;
+    int had_stress_seq_plusarg = $value$plusargs("stress_seq=%0s", stress_seq_name);
+    `DV_CHECK_FATAL(had_stress_seq_plusarg)
+
+    run_seq_with_rand_reset_vseq(.seq(create_seq_by_name(stress_seq_name)),
+                                 .num_times(num_times),
+                                 .reset_delay_bound(100_000));
+  endtask
+
+  local task run_intr_test_vseq(int unsigned num_times);
+    import dv_utils_pkg::interrupt_t;
+    dv_base_reg intr_csrs[$];
+    dv_base_reg intr_test_csrs[$];
+
+    foreach (all_csrs[i]) begin
+      string csr_name = all_csrs[i].get_name();
+      if (!uvm_re_match("intr_test*", csr_name) ||
+          !uvm_re_match("intr_enable*", csr_name) ||
+          !uvm_re_match("intr_state*", csr_name)) begin
+        intr_csrs.push_back(ral.get_dv_base_reg_by_name(csr_name));
+      end
+      if (!uvm_re_match("intr_test*", csr_name)) begin
+        intr_test_csrs.push_back(ral.get_dv_base_reg_by_name(csr_name));
+      end
+    end
+
+    // Checking the intr_test register works only makes sense if there is at least one interrupt
+    // register. We shouldn't call this sequence for blocks that don't have one, so let's fail
+    // understandably if we have done so by accident.
+    `DV_CHECK(intr_csrs.size() > 0, "Called intr_test vseq without any interrupt register.")
+
+    num_times = num_times * intr_csrs.size();
+    for (int trans = 1; trans <= num_times; trans++) begin
+      bit [BUS_DW-1:0] num_used_bits;
+      bit [BUS_DW-1:0] intr_enable_val[$];
+      `uvm_info(`gfn, $sformatf("Running intr test iteration %0d/%0d", trans, num_times), UVM_LOW)
+
+      // Random Write to all intr related registers
+      intr_csrs.shuffle();
+      foreach (intr_csrs[i]) begin
+        uvm_reg_data_t data = $urandom();
+        `uvm_info(`gfn, $sformatf("Write %s: 0x%0h", intr_csrs[i].`gfn, data), UVM_MEDIUM)
+        csr_wr(.ptr(intr_csrs[i]), .value(data));
+        if (cfg.under_reset) break;
+      end
+
+      // Read all intr related csr and check interrupt pins
+      intr_csrs.shuffle();
+      foreach (intr_csrs[i]) begin
+        uvm_reg_data_t exp_val = `gmv(intr_csrs[i]);
+        uvm_reg_data_t act_val;
+
+        interrupt_t irq_ro_mask = '0;
+
+        // Status type interrupts have RO fields in intr_state, so mask those bits off here as they
+        // can't be generically predicted for all IPs.
+        if (!uvm_re_match("intr_state*", intr_csrs[i].get_name())) begin
+          irq_ro_mask = intr_csrs[i].get_ro_mask();
+        end
+
+        exp_val &= ~irq_ro_mask;
+
+        csr_rd(.ptr(intr_csrs[i]), .value(act_val));
+        act_val &= ~irq_ro_mask;
+
+        if (cfg.under_reset) break;
+        `uvm_info(`gfn, $sformatf("Read %s: 0x%0h", intr_csrs[i].get_full_name(), act_val),
+                  UVM_MEDIUM)
+        if (intr_csrs[i].get_predicted_mask() == 0) begin
+          `DV_CHECK_EQ(exp_val, act_val, {"when reading the intr CSR ",
+                                          intr_csrs[i].get_full_name()})
+
+          // if it's intr_state, also check the interrupt pin value
+          if (!uvm_re_match("intr_state*", intr_csrs[i].get_name())) begin
+            interrupt_t exp_intr_pin = intr_csrs[i].get_intr_pins_exp_value();
+            interrupt_t act_intr_pin = cfg.intr_vif.sample();
+            act_intr_pin &= interrupt_t'((1 << cfg.num_interrupts) - 1);
+            `DV_CHECK_CASE_EQ(exp_intr_pin, act_intr_pin)
+          end // if (!uvm_re_match
+        end
+      end // foreach (intr_csrs[i])
+    end
+    // Write 0 to intr_test to clean up status interrupts, otherwise, status interrupts may remain
+    // active. And writing any value to a status interrupt CSR (intr_state) can't clear its value.
+    foreach (intr_test_csrs[i]) begin
+      csr_wr(.ptr(intr_test_csrs[i]), .value(0));
+    end
+  endtask
+
+  protected virtual task run_common_vseq_wrapper(int num_times = 1);
+    if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
+
+    disable_coverage_sample_for_csr_test();
+
+    // check which test type
+    case (common_seq_type)
+      "intr_test":                     run_intr_test_vseq(num_times);
+      // Each iteration only issues at most one reset. Increase to send at least 5 X num_times.
+      "stress_all_with_rand_reset":    run_plusarg_vseq_with_rand_reset(5 * num_times);
+      "same_csr_outstanding":          run_same_csr_outstanding_vseq(num_times);
+      "shadow_reg_errors":             run_shadow_reg_errors(num_times);
+      "shadow_reg_errors_with_csr_rw": run_shadow_reg_errors(num_times, 1);
+      "mem_partial_access":            run_mem_partial_access_vseq(num_times);
+      "csr_mem_rw_with_rand_reset":    run_csr_mem_rw_with_rand_reset_vseq(num_times);
+      "csr_mem_rw":                    run_csr_mem_rw_vseq(num_times);
+      // Increase iteration, otherwise each sec_cm is only tested 1-2 times
+      "sec_cm_fi":                     run_sec_cm_fi_vseq(10 * num_times);
+      default:                         run_csr_vseq_wrapper(num_times);
+    endcase
+  endtask
+
 endclass

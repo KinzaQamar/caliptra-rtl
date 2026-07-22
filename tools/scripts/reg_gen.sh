@@ -97,4 +97,4 @@ $REG_GEN $CALIPTRA_ROOT/src/csrng/data/csrng.rdl                       \
 
 $REG_GEN $CALIPTRA_ROOT/src/libs/data/interrupt_regs.rdl               \
     --emit-rtl --rtl-output $CALIPTRA_ROOT/src/libs/rtl/generated      \
-    --emit-dv  --dv-output  $CALIPTRA_ROOT/src/libs/dv/reg_model
+    --emit-dv  --dv-output  $CALIPTRA_ROOT/src/libs/dv/reg_model 

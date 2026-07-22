@@ -1,4 +1,4 @@
-addrmap csrng {
+addrmap csrng # (longint unsigned NumHApps = 3) {
     reg {
         field {
             sw = rw;
@@ -155,20 +155,8 @@ addrmap csrng {
         field {
             desc = "Reseed Counter indicating the number of completed Generate requests since the last Instantiate or Reseed command.";
             sw = r;
-        } RESEED_COUNTER_0[31:0] = 0x0;
-    } RESEED_COUNTER_0 @ 0x20;
-    reg {
-        field {
-            desc = "Reseed Counter indicating the number of completed Generate requests since the last Instantiate or Reseed command.";
-            sw = r;
-        } RESEED_COUNTER_0[31:0] = 0x0;
-    } RESEED_COUNTER_1 @ 0x24;
-    reg {
-        field {
-            desc = "Reseed Counter indicating the number of completed Generate requests since the last Instantiate or Reseed command.";
-            sw = r;
-        } RESEED_COUNTER_0[31:0] = 0x0;
-    } RESEED_COUNTER_2 @ 0x28;
+        } RESEED_COUNTER[31:0] = 0x0;
+    } RESEED_COUNTER[NumHApps] @ 0x20;
     reg {
         field {
             desc = "This bit indicates when the command interface is ready to accept commands.

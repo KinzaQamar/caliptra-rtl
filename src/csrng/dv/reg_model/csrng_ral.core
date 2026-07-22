@@ -1,0 +1,22 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "caliptra:dv:csrng_ral:0.1"
+description: "UVM register model for CSRNG"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_base_reg
+    files:
+      - csrng_sample.svh: {is_include_file: true}
+      - csrng_covergroups.svh: {is_include_file: true}
+      - csrng_uvm.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    toplevel: tb
+    filesets:
+      - files_dv
+    default_tool: vcs

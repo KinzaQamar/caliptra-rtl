@@ -44,6 +44,15 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // If this is true, all UVCs should run with zero delays, which creates a high bandwidth test.
   rand bit zero_delays;
 
+  // If this flag is set then we allow the stress_all_with_rand_reset task to apply a reset without
+  // waiting for CSR accesses to complete. This will only work if the IP block's vseqs
+  //
+  //  - Check for reset after performing a CSR read, skipping any check on the result if we are in
+  //  reset (because the result will be rubbish if we are in reset)
+  //
+  //  - Check for reset every so often (to run quickly to completion if a reset has been applied).
+  bit can_reset_with_csr_accesses = 1'b0;
+
   // The type_name of the base RAL type (RAL_T). This is exposed explicitly, rather than being
   // accessed through RAL_T::type_name, because this allows subclasses of dv_base_env_cfg to
   // override the base RAL type without messing up the parameterized class type.
@@ -86,8 +95,14 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // The interface for the clock and reset assoicated with the default RAL.
   virtual clk_rst_if clk_rst_vif;
 
+  // The interface for interrupts
+  intr_vif intr_vif;
+
   // The frequency of the clock and reset assoicated with the default RAL.
   rand uint clk_freq_mhz;
+
+  uint num_interrupts;
+  uint num_edn;
 
   // Set zero_delays 40% of the time
   extern constraint zero_delays_c;
@@ -103,6 +118,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     `uvm_field_int              (en_dv_cdc,       UVM_DEFAULT)
     `uvm_field_int              (smoke_test,      UVM_DEFAULT)
     `uvm_field_int              (zero_delays,     UVM_DEFAULT)
+    `uvm_field_int              (num_interrupts,  UVM_DEFAULT)
     `uvm_field_queue_string     (ral_model_names, UVM_DEFAULT)
     `uvm_field_aa_object_string (ral_models,      UVM_DEFAULT)
     `uvm_field_aa_int_string    (clk_freqs_mhz,   UVM_DEFAULT)
