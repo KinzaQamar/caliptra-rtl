@@ -947,8 +947,8 @@ package csrng_uvm;
     endclass : csrng__MAIN_SM_STATE
 
     // addrmap - csrng
-    class csrng_reg_block extends dv_base_reg_block;
-        `uvm_object_utils(csrng_reg_block)
+    class csrng extends dv_base_reg_block;
+        `uvm_object_utils(csrng)
         rand csrng__INTERRUPT_STATE INTERRUPT_STATE;
         rand csrng__INTERRUPT_ENABLE INTERRUPT_ENABLE;
         rand csrng__INTERRUPT_TEST INTERRUPT_TEST;
@@ -1093,5 +1093,8 @@ package csrng_uvm;
         endfunction : build
     endclass : csrng
 
+    typedef class csrng_reg_block;
+
     `include "csrng_sample.svh"
+    `include "csrng_reg_block.sv"
 endpackage: csrng_uvm
