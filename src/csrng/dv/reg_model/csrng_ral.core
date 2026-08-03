@@ -12,6 +12,7 @@ filesets:
       - csrng_sample.svh: {is_include_file: true}
       - csrng_covergroups.svh: {is_include_file: true}
       - csrng_uvm.sv
+      - csrng_reg_block.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
