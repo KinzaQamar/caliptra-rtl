@@ -972,126 +972,433 @@ package csrng_uvm;
         rand csrng__ERR_CODE_TEST ERR_CODE_TEST;
         rand csrng__MAIN_SM_STATE MAIN_SM_STATE;
 
-        function new(string name = "csrng");
-            super.new(name);
-        endfunction : new
+        extern function new(string name = "");
+        extern virtual function void build();
 
-        virtual function void build();
-            this.default_map = create_map("reg_map", 0, 4, UVM_NO_ENDIAN);
-            this.INTERRUPT_STATE = csrng__INTERRUPT_STATE::type_id::create("INTERRUPT_STATE");
-            this.INTERRUPT_STATE.configure(this);
+        extern local function void add_hdl_path_intr_state();
+        extern local function void add_hdl_path_intr_enable();
+        extern local function void add_hdl_path_regwen();
+        extern local function void add_hdl_path_ctrl();
+        extern local function void add_hdl_path_cmd_req();
+        extern local function void add_hdl_path_reseed_interval();
+        extern local function void add_hdl_path_reseed_counter();
+        extern local function void add_hdl_path_sw_cmd_sts();
+        extern local function void add_hdl_path_sw_genbits_vld();
+        extern local function void add_hdl_path_sw_genbits();
+        extern local function void add_hdl_path_sw_int_state_read_enable();
+        extern local function void add_hdl_path_sw_int_state_read_regwen();
+        extern local function void add_hdl_path_sw_int_state_num();
+        extern local function void add_hdl_path_sw_int_state_val();
+        extern local function void add_hdl_path_fips_force();
+        extern local function void add_hdl_path_hw_exc_sts();
+        extern local function void add_hdl_path_err_code();
+        extern local function void add_hdl_path_err_code_test();
+        extern local function void add_hdl_path_main_sm_state();
+    endclass : csrng_reg_block
 
-            this.INTERRUPT_STATE.build();
-            this.default_map.add_reg(this.INTERRUPT_STATE, 'h0);
-            this.INTERRUPT_ENABLE = csrng__INTERRUPT_ENABLE::type_id::create("INTERRUPT_ENABLE");
-            this.INTERRUPT_ENABLE.configure(this);
+    function csrng_reg_block::new(string name = "");
+        super.new(name);
+    endfunction : new
 
-            this.INTERRUPT_ENABLE.build();
-            this.default_map.add_reg(this.INTERRUPT_ENABLE, 'h4);
-            this.INTERRUPT_TEST = csrng__INTERRUPT_TEST::type_id::create("INTERRUPT_TEST");
-            this.INTERRUPT_TEST.configure(this);
+    function void csrng_reg_block::build();
+        this.default_map = create_map("reg_map", 0, 4, UVM_NO_ENDIAN);
+        this.INTERRUPT_STATE = csrng__INTERRUPT_STATE::type_id::create("INTERRUPT_STATE");
+        this.INTERRUPT_STATE.configure(this);
 
-            this.INTERRUPT_TEST.build();
-            this.default_map.add_reg(this.INTERRUPT_TEST, 'h8);
-            this.ALERT_TEST = csrng__ALERT_TEST::type_id::create("ALERT_TEST");
-            this.ALERT_TEST.configure(this);
+        this.INTERRUPT_STATE.build();
+        this.default_map.add_reg(this.INTERRUPT_STATE, 'h0);
+        this.INTERRUPT_ENABLE = csrng__INTERRUPT_ENABLE::type_id::create("INTERRUPT_ENABLE");
+        this.INTERRUPT_ENABLE.configure(this);
 
-            this.ALERT_TEST.build();
-            this.default_map.add_reg(this.ALERT_TEST, 'hc);
-            this.REGWEN = csrng__REGWEN::type_id::create("REGWEN");
-            this.REGWEN.configure(this);
+        this.INTERRUPT_ENABLE.build();
+        this.default_map.add_reg(this.INTERRUPT_ENABLE, 'h4);
+        this.INTERRUPT_TEST = csrng__INTERRUPT_TEST::type_id::create("INTERRUPT_TEST");
+        this.INTERRUPT_TEST.configure(this);
 
-            this.REGWEN.build();
-            this.default_map.add_reg(this.REGWEN, 'h10);
-            this.CTRL = csrng__CTRL::type_id::create("CTRL");
-            this.CTRL.configure(this);
+        this.INTERRUPT_TEST.build();
+        this.default_map.add_reg(this.INTERRUPT_TEST, 'h8);
+        this.ALERT_TEST = csrng__ALERT_TEST::type_id::create("ALERT_TEST");
+        this.ALERT_TEST.configure(this);
 
-            this.CTRL.build();
-            this.default_map.add_reg(this.CTRL, 'h14);
-            this.CMD_REQ = csrng__CMD_REQ::type_id::create("CMD_REQ");
-            this.CMD_REQ.configure(this);
+        this.ALERT_TEST.build();
+        this.default_map.add_reg(this.ALERT_TEST, 'hc);
+        this.REGWEN = csrng__REGWEN::type_id::create("REGWEN");
+        this.REGWEN.configure(this);
 
-            this.CMD_REQ.build();
-            this.default_map.add_reg(this.CMD_REQ, 'h18);
-            this.RESEED_INTERVAL = csrng__RESEED_INTERVAL::type_id::create("RESEED_INTERVAL");
-            this.RESEED_INTERVAL.configure(this);
+        this.REGWEN.build();
+        this.default_map.add_reg(this.REGWEN, 'h10);
+        this.CTRL = csrng__CTRL::type_id::create("CTRL");
+        this.CTRL.configure(this);
 
-            this.RESEED_INTERVAL.build();
-            this.default_map.add_reg(this.RESEED_INTERVAL, 'h1c);
-            foreach(this.RESEED_COUNTER[i0]) begin
-                this.RESEED_COUNTER[i0] = csrng__RESEED_COUNTER::type_id::create($sformatf("RESEED_COUNTER[%0d]", i0));
-                this.RESEED_COUNTER[i0].configure(this);
+        this.CTRL.build();
+        this.default_map.add_reg(this.CTRL, 'h14);
+        this.CMD_REQ = csrng__CMD_REQ::type_id::create("CMD_REQ");
+        this.CMD_REQ.configure(this);
 
-                this.RESEED_COUNTER[i0].build();
-                this.default_map.add_reg(this.RESEED_COUNTER[i0], 'h20 + i0*'h4);
-            end
-            this.SW_CMD_STS = csrng__SW_CMD_STS::type_id::create("SW_CMD_STS");
-            this.SW_CMD_STS.configure(this);
+        this.CMD_REQ.build();
+        this.default_map.add_reg(this.CMD_REQ, 'h18);
+        this.RESEED_INTERVAL = csrng__RESEED_INTERVAL::type_id::create("RESEED_INTERVAL");
+        this.RESEED_INTERVAL.configure(this);
 
-            this.SW_CMD_STS.build();
-            this.default_map.add_reg(this.SW_CMD_STS, 'h2c);
-            this.GENBITS_VLD = csrng__GENBITS_VLD::type_id::create("GENBITS_VLD");
-            this.GENBITS_VLD.configure(this);
+        this.RESEED_INTERVAL.build();
+        this.default_map.add_reg(this.RESEED_INTERVAL, 'h1c);
+        foreach(this.RESEED_COUNTER[i0]) begin
+            this.RESEED_COUNTER[i0] = csrng__RESEED_COUNTER::type_id::create($sformatf("RESEED_COUNTER[%0d]", i0));
+            this.RESEED_COUNTER[i0].configure(this);
 
-            this.GENBITS_VLD.build();
-            this.default_map.add_reg(this.GENBITS_VLD, 'h30);
-            this.GENBITS = csrng__GENBITS::type_id::create("GENBITS");
-            this.GENBITS.configure(this);
+            this.RESEED_COUNTER[i0].build();
+            this.default_map.add_reg(this.RESEED_COUNTER[i0], 'h20 + i0*'h4);
+        end
+        this.SW_CMD_STS = csrng__SW_CMD_STS::type_id::create("SW_CMD_STS");
+        this.SW_CMD_STS.configure(this);
 
-            this.GENBITS.build();
-            this.default_map.add_reg(this.GENBITS, 'h34);
-            this.INT_STATE_READ_ENABLE = csrng__INT_STATE_READ_ENABLE::type_id::create("INT_STATE_READ_ENABLE");
-            this.INT_STATE_READ_ENABLE.configure(this);
+        this.SW_CMD_STS.build();
+        this.default_map.add_reg(this.SW_CMD_STS, 'h2c);
+        this.GENBITS_VLD = csrng__GENBITS_VLD::type_id::create("GENBITS_VLD");
+        this.GENBITS_VLD.configure(this);
 
-            this.INT_STATE_READ_ENABLE.build();
-            this.default_map.add_reg(this.INT_STATE_READ_ENABLE, 'h38);
-            this.INT_STATE_READ_ENABLE_REGWEN = csrng__INT_STATE_READ_ENABLE_REGWEN::type_id::create("INT_STATE_READ_ENABLE_REGWEN");
-            this.INT_STATE_READ_ENABLE_REGWEN.configure(this);
+        this.GENBITS_VLD.build();
+        this.default_map.add_reg(this.GENBITS_VLD, 'h30);
+        this.GENBITS = csrng__GENBITS::type_id::create("GENBITS");
+        this.GENBITS.configure(this);
 
-            this.INT_STATE_READ_ENABLE_REGWEN.build();
-            this.default_map.add_reg(this.INT_STATE_READ_ENABLE_REGWEN, 'h3c);
-            this.INT_STATE_NUM = csrng__INT_STATE_NUM::type_id::create("INT_STATE_NUM");
-            this.INT_STATE_NUM.configure(this);
+        this.GENBITS.build();
+        this.default_map.add_reg(this.GENBITS, 'h34);
+        this.INT_STATE_READ_ENABLE = csrng__INT_STATE_READ_ENABLE::type_id::create("INT_STATE_READ_ENABLE");
+        this.INT_STATE_READ_ENABLE.configure(this);
 
-            this.INT_STATE_NUM.build();
-            this.default_map.add_reg(this.INT_STATE_NUM, 'h40);
-            this.INT_STATE_VAL = csrng__INT_STATE_VAL::type_id::create("INT_STATE_VAL");
-            this.INT_STATE_VAL.configure(this);
+        this.INT_STATE_READ_ENABLE.build();
+        this.default_map.add_reg(this.INT_STATE_READ_ENABLE, 'h38);
+        this.INT_STATE_READ_ENABLE_REGWEN = csrng__INT_STATE_READ_ENABLE_REGWEN::type_id::create("INT_STATE_READ_ENABLE_REGWEN");
+        this.INT_STATE_READ_ENABLE_REGWEN.configure(this);
 
-            this.INT_STATE_VAL.build();
-            this.default_map.add_reg(this.INT_STATE_VAL, 'h44);
-            this.FIPS_FORCE = csrng__FIPS_FORCE::type_id::create("FIPS_FORCE");
-            this.FIPS_FORCE.configure(this);
+        this.INT_STATE_READ_ENABLE_REGWEN.build();
+        this.default_map.add_reg(this.INT_STATE_READ_ENABLE_REGWEN, 'h3c);
+        this.INT_STATE_NUM = csrng__INT_STATE_NUM::type_id::create("INT_STATE_NUM");
+        this.INT_STATE_NUM.configure(this);
 
-            this.FIPS_FORCE.build();
-            this.default_map.add_reg(this.FIPS_FORCE, 'h48);
-            this.HW_EXC_STS = csrng__HW_EXC_STS::type_id::create("HW_EXC_STS");
-            this.HW_EXC_STS.configure(this);
+        this.INT_STATE_NUM.build();
+        this.default_map.add_reg(this.INT_STATE_NUM, 'h40);
+        this.INT_STATE_VAL = csrng__INT_STATE_VAL::type_id::create("INT_STATE_VAL");
+        this.INT_STATE_VAL.configure(this);
 
-            this.HW_EXC_STS.build();
-            this.default_map.add_reg(this.HW_EXC_STS, 'h4c);
-            this.RECOV_ALERT_STS = csrng__RECOV_ALERT_STS::type_id::create("RECOV_ALERT_STS");
-            this.RECOV_ALERT_STS.configure(this);
+        this.INT_STATE_VAL.build();
+        this.default_map.add_reg(this.INT_STATE_VAL, 'h44);
+        this.FIPS_FORCE = csrng__FIPS_FORCE::type_id::create("FIPS_FORCE");
+        this.FIPS_FORCE.configure(this);
 
-            this.RECOV_ALERT_STS.build();
-            this.default_map.add_reg(this.RECOV_ALERT_STS, 'h50);
-            this.ERR_CODE = csrng__ERR_CODE::type_id::create("ERR_CODE");
-            this.ERR_CODE.configure(this);
+        this.FIPS_FORCE.build();
+        this.default_map.add_reg(this.FIPS_FORCE, 'h48);
+        this.HW_EXC_STS = csrng__HW_EXC_STS::type_id::create("HW_EXC_STS");
+        this.HW_EXC_STS.configure(this);
 
-            this.ERR_CODE.build();
-            this.default_map.add_reg(this.ERR_CODE, 'h54);
-            this.ERR_CODE_TEST = csrng__ERR_CODE_TEST::type_id::create("ERR_CODE_TEST");
-            this.ERR_CODE_TEST.configure(this);
+        this.HW_EXC_STS.build();
+        this.default_map.add_reg(this.HW_EXC_STS, 'h4c);
+        this.RECOV_ALERT_STS = csrng__RECOV_ALERT_STS::type_id::create("RECOV_ALERT_STS");
+        this.RECOV_ALERT_STS.configure(this);
 
-            this.ERR_CODE_TEST.build();
-            this.default_map.add_reg(this.ERR_CODE_TEST, 'h58);
-            this.MAIN_SM_STATE = csrng__MAIN_SM_STATE::type_id::create("MAIN_SM_STATE");
-            this.MAIN_SM_STATE.configure(this);
+        this.RECOV_ALERT_STS.build();
+        this.default_map.add_reg(this.RECOV_ALERT_STS, 'h50);
+        this.ERR_CODE = csrng__ERR_CODE::type_id::create("ERR_CODE");
+        this.ERR_CODE.configure(this);
 
-            this.MAIN_SM_STATE.build();
-            this.default_map.add_reg(this.MAIN_SM_STATE, 'h5c);
-        endfunction : build
-    endclass : csrng
+        this.ERR_CODE.build();
+        this.default_map.add_reg(this.ERR_CODE, 'h54);
+        this.ERR_CODE_TEST = csrng__ERR_CODE_TEST::type_id::create("ERR_CODE_TEST");
+        this.ERR_CODE_TEST.configure(this);
+
+        this.ERR_CODE_TEST.build();
+        this.default_map.add_reg(this.ERR_CODE_TEST, 'h58);
+        this.MAIN_SM_STATE = csrng__MAIN_SM_STATE::type_id::create("MAIN_SM_STATE");
+        this.MAIN_SM_STATE.configure(this);
+
+        this.MAIN_SM_STATE.build();
+        this.default_map.add_reg(this.MAIN_SM_STATE, 'h5c);
+
+        // Set the root path to the DUT that can be prepended with the register paths to do
+        // backdoor search.
+        set_hdl_path_root("tb.dut", "BkdrRegPathRtl");
+        set_hdl_path_root("tb.dut", "BkdrRegPathRtlShadow");
+
+        // Add the register paths for backdoor
+        add_hdl_path_intr_state();
+        add_hdl_path_intr_enable();
+        add_hdl_path_regwen();
+        add_hdl_path_ctrl();
+        add_hdl_path_cmd_req();
+        add_hdl_path_reseed_interval();
+        add_hdl_path_reseed_counter();
+        add_hdl_path_sw_cmd_sts();
+        add_hdl_path_sw_genbits_vld();
+        add_hdl_path_sw_genbits();
+        add_hdl_path_sw_int_state_read_enable();
+        add_hdl_path_sw_int_state_read_regwen();
+        add_hdl_path_sw_int_state_num();
+        add_hdl_path_sw_int_state_val();
+        add_hdl_path_fips_force();
+        add_hdl_path_hw_exc_sts();
+        add_hdl_path_err_code();
+        add_hdl_path_err_code_test();
+        add_hdl_path_main_sm_state();
+    endfunction : build
+
+    function void csrng_reg_block::add_hdl_path_intr_state();
+        INTERRUPT_STATE.add_hdl_path_slice("u_reg.u_intr_state_cs_cmd_req_done.q",
+                                           0,
+                                           1,
+                                           0,
+                                           "BkdrRegPathRtl");
+        INTERRUPT_STATE.add_hdl_path_slice("u_reg.u_intr_state_cs_entropy_req.q",
+                                           1,
+                                           1,
+                                           0,
+                                           "BkdrRegPathRtl");
+        INTERRUPT_STATE.add_hdl_path_slice("u_reg.u_intr_state_cs_hw_inst_exc.q",
+                                           2,
+                                           1,
+                                           0,
+                                           "BkdrRegPathRtl");
+        INTERRUPT_STATE.add_hdl_path_slice("u_reg.u_intr_state_cs_fatal_err.q",
+                                           3,
+                                           1,
+                                           0,
+                                           "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_intr_enable();
+        INTERRUPT_ENABLE.add_hdl_path_slice("u_reg.u_intr_enable_cs_cmd_req_done.q",
+                                       0,
+                                       1,
+                                       0,
+                                       "BkdrRegPathRtl");
+        INTERRUPT_ENABLE.add_hdl_path_slice("u_reg.u_intr_enable_cs_entropy_req.q",
+                                       1,
+                                       1,
+                                       0,
+                                       "BkdrRegPathRtl");
+        INTERRUPT_ENABLE.add_hdl_path_slice("u_reg.u_intr_enable_cs_hw_inst_exc.q",
+                                       2,
+                                       1,
+                                       0,
+                                       "BkdrRegPathRtl");
+        INTERRUPT_ENABLE.add_hdl_path_slice("u_reg.u_intr_enable_cs_fatal_err.q",
+                                       3,
+                                       1,
+                                       0,
+                                       "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_regwen();
+        REGWEN.add_hdl_path_slice("u_reg.u_regwen.q",
+                                  0,
+                                  1,
+                                  0,
+                                  "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_ctrl();
+        CTRL.add_hdl_path_slice("u_reg.u_ctrl_enable.q",
+                                0,
+                                4,
+                                0,
+                                "BkdrRegPathRtl");
+        CTRL.add_hdl_path_slice("u_reg.u_ctrl_sw_app_enable.q",
+                                4,
+                                4,
+                                0,
+                                "BkdrRegPathRtl");
+        CTRL.add_hdl_path_slice("u_reg.u_ctrl_read_int_state.q",
+                                8,
+                                4,
+                                0,
+                                "BkdrRegPathRtl");
+        CTRL.add_hdl_path_slice("u_reg.u_ctrl_fips_force_enable.q",
+                                12,
+                                4,
+                                0,
+                                "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_cmd_req();
+        CMD_REQ.add_hdl_path_slice("u_reg.u_cmd_req.q",
+                                   0,
+                                   32,
+                                   0,
+                                   "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_reseed_interval();
+        RESEED_INTERVAL.add_hdl_path_slice("u_reg.u_reseed_interval.q",
+                                           0,
+                                           32,
+                                           0,
+                                           "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_reseed_counter();
+        foreach(RESEED_COUNTER[i])
+            RESEED_COUNTER[i].add_hdl_path_slice($sformatf("u_reg.u_reseed_counter_%0d.qs", i),
+                                                           0,
+                                                           32,
+                                                           0,
+                                                           "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_sw_cmd_sts();
+        SW_CMD_STS.add_hdl_path_slice("u_reg.u_sw_cmd_sts_cmd_rdy.q",
+                                      1,
+                                      1,
+                                      0,
+                                      "BkdrRegPathRtl");
+        SW_CMD_STS.add_hdl_path_slice("u_reg.u_sw_cmd_sts_cmd_ack.q",
+                                      2,
+                                      1,
+                                      0,
+                                      "BkdrRegPathRtl");
+        SW_CMD_STS.add_hdl_path_slice("u_reg.u_sw_cmd_sts_cmd_sts.q",
+                                      3,
+                                      3,
+                                      0,
+                                      "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_sw_genbits_vld();
+        GENBITS_VLD.add_hdl_path_slice("u_reg.u_genbits_vld_genbits_vld.qs",
+                                       0,
+                                       1,
+                                       0,
+                                       "BkdrRegPathRtl");
+        GENBITS_VLD.add_hdl_path_slice("u_reg.u_genbits_vld_genbits_fips.qs",
+                                       1,
+                                       1,
+                                       0,
+                                       "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_sw_genbits();
+        GENBITS.add_hdl_path_slice("u_reg.u_genbits.qs",
+                                   0,
+                                   32,
+                                   0,
+                                   "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_sw_int_state_read_enable();
+        INT_STATE_READ_ENABLE.add_hdl_path_slice("u_reg.u_int_state_read_enable.q",
+                                                 0,
+                                                 3,
+                                                 0,
+                                                 "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_sw_int_state_read_regwen();
+        INT_STATE_READ_ENABLE_REGWEN.add_hdl_path_slice("u_reg.u_int_state_read_enable_regwen.q",
+                                                        0,
+                                                        1,
+                                                        0,
+                                                        "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_sw_int_state_num();
+        INT_STATE_NUM.add_hdl_path_slice("u_reg.u_int_state_num.q",
+                                         0,
+                                         4,
+                                         0,
+                                         "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_sw_int_state_val();
+        INT_STATE_VAL.add_hdl_path_slice("u_reg.u_int_state_val.qs",
+                                         0,
+                                         32,
+                                         0,
+                                         "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_fips_force();
+        FIPS_FORCE.add_hdl_path_slice("u_reg.u_fips_force.q",
+                                      0,
+                                      3,
+                                      0,
+                                      "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_hw_exc_sts();
+        HW_EXC_STS.add_hdl_path_slice("u_reg.u_hw_exc_sts.q",
+                                      0,
+                                      16,
+                                      0,
+                                      "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_err_code();
+        ERR_CODE.add_hdl_path_slice("u_reg.u_err_code_sfifo_cmd_err.q",
+                                    0,
+                                    1,
+                                    0,
+                                    "BkdrRegPathRtl");
+        ERR_CODE.add_hdl_path_slice("u_reg.u_err_code_sfifo_genbits_err.q",
+                                    1,
+                                    1,
+                                    0,
+                                    "BkdrRegPathRtl");
+        ERR_CODE.add_hdl_path_slice("u_reg.u_err_code_cmd_stage_sm_err.q",
+                                    20,
+                                    1,
+                                    0,
+                                    "BkdrRegPathRtl");
+        ERR_CODE.add_hdl_path_slice("u_reg.u_err_code_main_sm_err.q",
+                                    21,
+                                    1,
+                                    0,
+                                    "BkdrRegPathRtl");
+        ERR_CODE.add_hdl_path_slice("u_reg.u_err_code_ctr_drbg_sm_err.q",
+                                    22,
+                                    1,
+                                    0,
+                                    "BkdrRegPathRtl");
+        ERR_CODE.add_hdl_path_slice("u_reg.u_err_code_aes_cipher_sm_err.q",
+                                    25,
+                                    1,
+                                    0,
+                                    "BkdrRegPathRtl");
+        ERR_CODE.add_hdl_path_slice("u_reg.u_err_code_ctr_err.q",
+                                    26,
+                                    1,
+                                    0,
+                                    "BkdrRegPathRtl");
+        ERR_CODE.add_hdl_path_slice("u_reg.u_err_code_fifo_write_err.q",
+                                    28,
+                                    1,
+                                    0,
+                                    "BkdrRegPathRtl");
+        ERR_CODE.add_hdl_path_slice("u_reg.u_err_code_fifo_read_err.q",
+                                    29,
+                                    1,
+                                    0,
+                                    "BkdrRegPathRtl");
+        ERR_CODE.add_hdl_path_slice("u_reg.u_err_code_fifo_state_err.q",
+                                    30,
+                                    1,
+                                    0,
+                                    "BkdrRegPathRtl");
+    endfunction : add_hdl_path_err_code
+
+    function void csrng_reg_block::add_hdl_path_err_code_test();
+        ERR_CODE_TEST.add_hdl_path_slice("u_reg.u_err_code_test.q",
+                                         0,
+                                         5,
+                                         0,
+                                         "BkdrRegPathRtl");
+    endfunction
+
+    function void csrng_reg_block::add_hdl_path_main_sm_state();
+        MAIN_SM_STATE.add_hdl_path_slice("u_reg.u_main_sm_state.q",
+                                         0,
+                                         6,
+                                         0,
+                                         "BkdrRegPathRtl");
+    endfunction
 
     `include "csrng_sample.svh"
 endpackage: csrng_uvm
