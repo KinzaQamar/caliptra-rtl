@@ -32,13 +32,13 @@ package csrng_uvm;
 
         virtual function void build();
             this.CS_CMD_REQ_DONE = dv_base_reg_field::type_id::create("CS_CMD_REQ_DONE");
-            this.CS_CMD_REQ_DONE.configure(this, 1, 0, "W1C", 1, 'h0, 0, 1, 0);
+            this.CS_CMD_REQ_DONE.configure(this, 1, 0, "W1C", 1, 'h0, 0, 1, 1);
             this.CS_ENTROPY_REQ = dv_base_reg_field::type_id::create("CS_ENTROPY_REQ");
-            this.CS_ENTROPY_REQ.configure(this, 1, 1, "W1C", 1, 'h0, 0, 1, 0);
+            this.CS_ENTROPY_REQ.configure(this, 1, 1, "W1C", 1, 'h0, 0, 1, 1);
             this.CS_HW_INST_EXC = dv_base_reg_field::type_id::create("CS_HW_INST_EXC");
-            this.CS_HW_INST_EXC.configure(this, 1, 2, "W1C", 1, 'h0, 0, 1, 0);
+            this.CS_HW_INST_EXC.configure(this, 1, 2, "W1C", 1, 'h0, 0, 1, 1);
             this.CS_FATAL_ERR = dv_base_reg_field::type_id::create("CS_FATAL_ERR");
-            this.CS_FATAL_ERR.configure(this, 1, 3, "W1C", 1, 'h0, 0, 1, 0);
+            this.CS_FATAL_ERR.configure(this, 1, 3, "W1C", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(CS_CMD_REQ_DONE_bit_cg[bt]) CS_CMD_REQ_DONE_bit_cg[bt] = new();
                 foreach(CS_ENTROPY_REQ_bit_cg[bt]) CS_ENTROPY_REQ_bit_cg[bt] = new();
@@ -78,13 +78,13 @@ package csrng_uvm;
 
         virtual function void build();
             this.CS_CMD_REQ_DONE = dv_base_reg_field::type_id::create("CS_CMD_REQ_DONE");
-            this.CS_CMD_REQ_DONE.configure(this, 1, 0, "W1C", 1, 'h0, 0, 1, 0);
+            this.CS_CMD_REQ_DONE.configure(this, 1, 0, "RW", 1, 'h0, 0, 1, 1);
             this.CS_ENTROPY_REQ = dv_base_reg_field::type_id::create("CS_ENTROPY_REQ");
-            this.CS_ENTROPY_REQ.configure(this, 1, 1, "W1C", 1, 'h0, 0, 1, 0);
+            this.CS_ENTROPY_REQ.configure(this, 1, 1, "RW", 1, 'h0, 0, 1, 1);
             this.CS_HW_INST_EXC = dv_base_reg_field::type_id::create("CS_HW_INST_EXC");
-            this.CS_HW_INST_EXC.configure(this, 1, 2, "W1C", 1, 'h0, 0, 1, 0);
+            this.CS_HW_INST_EXC.configure(this, 1, 2, "RW", 1, 'h0, 0, 1, 1);
             this.CS_FATAL_ERR = dv_base_reg_field::type_id::create("CS_FATAL_ERR");
-            this.CS_FATAL_ERR.configure(this, 1, 3, "W1C", 1, 'h0, 0, 1, 0);
+            this.CS_FATAL_ERR.configure(this, 1, 3, "RW", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(CS_CMD_REQ_DONE_bit_cg[bt]) CS_CMD_REQ_DONE_bit_cg[bt] = new();
                 foreach(CS_ENTROPY_REQ_bit_cg[bt]) CS_ENTROPY_REQ_bit_cg[bt] = new();
@@ -124,13 +124,13 @@ package csrng_uvm;
 
         virtual function void build();
             this.CS_CMD_REQ_DONE = dv_base_reg_field::type_id::create("CS_CMD_REQ_DONE");
-            this.CS_CMD_REQ_DONE.configure(this, 1, 0, "WO", 1, 'h0, 0, 1, 0);
+            this.CS_CMD_REQ_DONE.configure(this, 1, 0, "WO", 1, 'h0, 0, 1, 1);
             this.CS_ENTROPY_REQ = dv_base_reg_field::type_id::create("CS_ENTROPY_REQ");
-            this.CS_ENTROPY_REQ.configure(this, 1, 1, "WO", 1, 'h0, 0, 1, 0);
+            this.CS_ENTROPY_REQ.configure(this, 1, 1, "WO", 1, 'h0, 0, 1, 1);
             this.CS_HW_INST_EXC = dv_base_reg_field::type_id::create("CS_HW_INST_EXC");
-            this.CS_HW_INST_EXC.configure(this, 1, 2, "WO", 1, 'h0, 0, 1, 0);
+            this.CS_HW_INST_EXC.configure(this, 1, 2, "WO", 1, 'h0, 0, 1, 1);
             this.CS_FATAL_ERR = dv_base_reg_field::type_id::create("CS_FATAL_ERR");
-            this.CS_FATAL_ERR.configure(this, 1, 3, "WO", 1, 'h0, 0, 1, 0);
+            this.CS_FATAL_ERR.configure(this, 1, 3, "WO", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(CS_CMD_REQ_DONE_bit_cg[bt]) CS_CMD_REQ_DONE_bit_cg[bt] = new();
                 foreach(CS_ENTROPY_REQ_bit_cg[bt]) CS_ENTROPY_REQ_bit_cg[bt] = new();
@@ -166,9 +166,9 @@ package csrng_uvm;
 
         virtual function void build();
             this.RECOV_ALERT = dv_base_reg_field::type_id::create("RECOV_ALERT");
-            this.RECOV_ALERT.configure(this, 1, 0, "WO", 1, 'h0, 0, 1, 0);
+            this.RECOV_ALERT.configure(this, 1, 0, "WO", 1, 'h0, 0, 1, 1);
             this.FATAL_ALERT = dv_base_reg_field::type_id::create("FATAL_ALERT");
-            this.FATAL_ALERT.configure(this, 1, 1, "WO", 1, 'h0, 0, 1, 0);
+            this.FATAL_ALERT.configure(this, 1, 1, "WO", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(RECOV_ALERT_bit_cg[bt]) RECOV_ALERT_bit_cg[bt] = new();
                 foreach(FATAL_ALERT_bit_cg[bt]) FATAL_ALERT_bit_cg[bt] = new();
@@ -200,7 +200,7 @@ package csrng_uvm;
 
         virtual function void build();
             this.REGWEN = dv_base_reg_field::type_id::create("REGWEN");
-            this.REGWEN.configure(this, 1, 0, "W1C", 1, 'h1, 1, 1, 0);
+            this.REGWEN.configure(this, 1, 0, "W0C", 1, 'h1, 1, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(REGWEN_bit_cg[bt]) REGWEN_bit_cg[bt] = new();
             end
@@ -237,13 +237,13 @@ package csrng_uvm;
 
         virtual function void build();
             this.ENABLE = dv_base_reg_field::type_id::create("ENABLE");
-            this.ENABLE.configure(this, 4, 0, "RW", 1, 'h9, 1, 1, 0);
+            this.ENABLE.configure(this, 4, 0, "RW", 1, 'h9, 1, 1, 1);
             this.SW_APP_ENABLE = dv_base_reg_field::type_id::create("SW_APP_ENABLE");
-            this.SW_APP_ENABLE.configure(this, 4, 4, "RW", 1, 'h9, 1, 1, 0);
+            this.SW_APP_ENABLE.configure(this, 4, 4, "RW", 1, 'h9, 1, 1, 1);
             this.READ_INT_STATE = dv_base_reg_field::type_id::create("READ_INT_STATE");
-            this.READ_INT_STATE.configure(this, 4, 8, "RW", 1, 'h9, 1, 1, 0);
+            this.READ_INT_STATE.configure(this, 4, 8, "RW", 1, 'h9, 1, 1, 1);
             this.FIPS_FORCE_ENABLE = dv_base_reg_field::type_id::create("FIPS_FORCE_ENABLE");
-            this.FIPS_FORCE_ENABLE.configure(this, 4, 12, "RW", 1, 'h9, 1, 1, 0);
+            this.FIPS_FORCE_ENABLE.configure(this, 4, 12, "RW", 1, 'h9, 1, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(ENABLE_bit_cg[bt]) ENABLE_bit_cg[bt] = new();
                 foreach(SW_APP_ENABLE_bit_cg[bt]) SW_APP_ENABLE_bit_cg[bt] = new();
@@ -283,13 +283,13 @@ package csrng_uvm;
 
         virtual function void build();
             this.acmd = dv_base_reg_field::type_id::create("acmd");
-            this.acmd.configure(this, 4, 0, "WO", 1, 'h0, 0, 1, 0);
+            this.acmd.configure(this, 4, 0, "WO", 1, 'h0, 0, 1, 1);
             this.clen = dv_base_reg_field::type_id::create("clen");
-            this.clen.configure(this, 4, 4, "WO", 1, 'h0, 0, 1, 0);
+            this.clen.configure(this, 4, 4, "WO", 1, 'h0, 0, 1, 1);
             this.flag0 = dv_base_reg_field::type_id::create("flag0");
-            this.flag0.configure(this, 4, 8, "WO", 1, 'h0, 0, 1, 0);
+            this.flag0.configure(this, 4, 8, "WO", 1, 'h0, 0, 1, 1);
             this.glen = dv_base_reg_field::type_id::create("glen");
-            this.glen.configure(this, 13, 12, "WO", 1, 'h0, 0, 1, 0);
+            this.glen.configure(this, 13, 12, "WO", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(acmd_bit_cg[bt]) acmd_bit_cg[bt] = new();
                 foreach(clen_bit_cg[bt]) clen_bit_cg[bt] = new();
@@ -323,7 +323,7 @@ package csrng_uvm;
 
         virtual function void build();
             this.RESEED_INTERVAL = dv_base_reg_field::type_id::create("RESEED_INTERVAL");
-            this.RESEED_INTERVAL.configure(this, 32, 0, "RW", 1, 'hffffffff, 1, 1, 0);
+            this.RESEED_INTERVAL.configure(this, 32, 0, "RW", 1, 'hffffffff, 1, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(RESEED_INTERVAL_bit_cg[bt]) RESEED_INTERVAL_bit_cg[bt] = new();
             end
@@ -354,7 +354,7 @@ package csrng_uvm;
 
         virtual function void build();
             this.RESEED_COUNTER = dv_base_reg_field::type_id::create("RESEED_COUNTER");
-            this.RESEED_COUNTER.configure(this, 32, 0, "RO", 1, 'h0, 1, 1, 0);
+            this.RESEED_COUNTER.configure(this, 32, 0, "RO", 1, 'h0, 1, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(RESEED_COUNTER_bit_cg[bt]) RESEED_COUNTER_bit_cg[bt] = new();
             end
@@ -389,11 +389,11 @@ package csrng_uvm;
 
         virtual function void build();
             this.CMD_RDY = dv_base_reg_field::type_id::create("CMD_RDY");
-            this.CMD_RDY.configure(this, 1, 1, "RO", 1, 'h0, 1, 1, 0);
+            this.CMD_RDY.configure(this, 1, 1, "RO", 1, 'h0, 1, 1, 1);
             this.CMD_ACK = dv_base_reg_field::type_id::create("CMD_ACK");
-            this.CMD_ACK.configure(this, 1, 2, "RO", 1, 'h0, 1, 1, 0);
+            this.CMD_ACK.configure(this, 1, 2, "RO", 1, 'h0, 1, 1, 1);
             this.CMD_STS = dv_base_reg_field::type_id::create("CMD_STS");
-            this.CMD_STS.configure(this, 3, 3, "RO", 1, 'h0, 1, 1, 0);
+            this.CMD_STS.configure(this, 3, 3, "RO", 1, 'h0, 1, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(CMD_RDY_bit_cg[bt]) CMD_RDY_bit_cg[bt] = new();
                 foreach(CMD_ACK_bit_cg[bt]) CMD_ACK_bit_cg[bt] = new();
@@ -428,9 +428,9 @@ package csrng_uvm;
 
         virtual function void build();
             this.GENBITS_VLD = dv_base_reg_field::type_id::create("GENBITS_VLD");
-            this.GENBITS_VLD.configure(this, 1, 0, "RO", 1, 'h0, 0, 1, 0);
+            this.GENBITS_VLD.configure(this, 1, 0, "RO", 1, 'h0, 0, 1, 1);
             this.GENBITS_FIPS = dv_base_reg_field::type_id::create("GENBITS_FIPS");
-            this.GENBITS_FIPS.configure(this, 1, 1, "RO", 1, 'h0, 0, 1, 0);
+            this.GENBITS_FIPS.configure(this, 1, 1, "RO", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(GENBITS_VLD_bit_cg[bt]) GENBITS_VLD_bit_cg[bt] = new();
                 foreach(GENBITS_FIPS_bit_cg[bt]) GENBITS_FIPS_bit_cg[bt] = new();
@@ -462,7 +462,7 @@ package csrng_uvm;
 
         virtual function void build();
             this.GENBITS = dv_base_reg_field::type_id::create("GENBITS");
-            this.GENBITS.configure(this, 32, 0, "RO", 1, 'h0, 0, 1, 0);
+            this.GENBITS.configure(this, 32, 0, "RO", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(GENBITS_bit_cg[bt]) GENBITS_bit_cg[bt] = new();
             end
@@ -493,7 +493,7 @@ package csrng_uvm;
 
         virtual function void build();
             this.INT_STATE_READ_ENABLE = dv_base_reg_field::type_id::create("INT_STATE_READ_ENABLE");
-            this.INT_STATE_READ_ENABLE.configure(this, 3, 0, "RW", 1, 'h7, 1, 1, 0);
+            this.INT_STATE_READ_ENABLE.configure(this, 3, 0, "RW", 1, 'h7, 1, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(INT_STATE_READ_ENABLE_bit_cg[bt]) INT_STATE_READ_ENABLE_bit_cg[bt] = new();
             end
@@ -524,7 +524,7 @@ package csrng_uvm;
 
         virtual function void build();
             this.INT_STATE_READ_ENABLE_REGWEN = dv_base_reg_field::type_id::create("INT_STATE_READ_ENABLE_REGWEN");
-            this.INT_STATE_READ_ENABLE_REGWEN.configure(this, 1, 0, "W1C", 1, 'h1, 1, 1, 0);
+            this.INT_STATE_READ_ENABLE_REGWEN.configure(this, 1, 0, "W0C", 1, 'h1, 1, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(INT_STATE_READ_ENABLE_REGWEN_bit_cg[bt]) INT_STATE_READ_ENABLE_REGWEN_bit_cg[bt] = new();
             end
@@ -555,7 +555,7 @@ package csrng_uvm;
 
         virtual function void build();
             this.INT_STATE_NUM = dv_base_reg_field::type_id::create("INT_STATE_NUM");
-            this.INT_STATE_NUM.configure(this, 4, 0, "RW", 1, 'h0, 0, 1, 0);
+            this.INT_STATE_NUM.configure(this, 4, 0, "RW", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(INT_STATE_NUM_bit_cg[bt]) INT_STATE_NUM_bit_cg[bt] = new();
             end
@@ -586,7 +586,7 @@ package csrng_uvm;
 
         virtual function void build();
             this.INT_STATE_VAL = dv_base_reg_field::type_id::create("INT_STATE_VAL");
-            this.INT_STATE_VAL.configure(this, 32, 0, "RO", 1, 'h0, 0, 1, 0);
+            this.INT_STATE_VAL.configure(this, 32, 0, "RO", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(INT_STATE_VAL_bit_cg[bt]) INT_STATE_VAL_bit_cg[bt] = new();
             end
@@ -617,7 +617,7 @@ package csrng_uvm;
 
         virtual function void build();
             this.FIPS_FORCE = dv_base_reg_field::type_id::create("FIPS_FORCE");
-            this.FIPS_FORCE.configure(this, 3, 0, "RW", 1, 'h0, 0, 1, 0);
+            this.FIPS_FORCE.configure(this, 3, 0, "RW", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(FIPS_FORCE_bit_cg[bt]) FIPS_FORCE_bit_cg[bt] = new();
             end
@@ -648,7 +648,7 @@ package csrng_uvm;
 
         virtual function void build();
             this.HW_EXC_STS = dv_base_reg_field::type_id::create("HW_EXC_STS");
-            this.HW_EXC_STS.configure(this, 16, 0, "W1C", 1, 'h0, 0, 1, 0);
+            this.HW_EXC_STS.configure(this, 16, 0, "W0C", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(HW_EXC_STS_bit_cg[bt]) HW_EXC_STS_bit_cg[bt] = new();
             end
@@ -695,23 +695,23 @@ package csrng_uvm;
 
         virtual function void build();
             this.ENABLE_FIELD_ALERT = dv_base_reg_field::type_id::create("ENABLE_FIELD_ALERT");
-            this.ENABLE_FIELD_ALERT.configure(this, 1, 0, "W1C", 1, 'h0, 0, 1, 0);
+            this.ENABLE_FIELD_ALERT.configure(this, 1, 0, "W0C", 1, 'h0, 0, 1, 1);
             this.SW_APP_ENABLE_FIELD_ALERT = dv_base_reg_field::type_id::create("SW_APP_ENABLE_FIELD_ALERT");
-            this.SW_APP_ENABLE_FIELD_ALERT.configure(this, 1, 1, "W1C", 1, 'h0, 0, 1, 0);
+            this.SW_APP_ENABLE_FIELD_ALERT.configure(this, 1, 1, "W0C", 1, 'h0, 0, 1, 1);
             this.READ_INT_STATE_FIELD_ALERT = dv_base_reg_field::type_id::create("READ_INT_STATE_FIELD_ALERT");
-            this.READ_INT_STATE_FIELD_ALERT.configure(this, 1, 2, "W1C", 1, 'h0, 0, 1, 0);
+            this.READ_INT_STATE_FIELD_ALERT.configure(this, 1, 2, "W0C", 1, 'h0, 0, 1, 1);
             this.FIPS_FORCE_ENABLE_FIELD_ALERT = dv_base_reg_field::type_id::create("FIPS_FORCE_ENABLE_FIELD_ALERT");
-            this.FIPS_FORCE_ENABLE_FIELD_ALERT.configure(this, 1, 3, "W1C", 1, 'h0, 0, 1, 0);
+            this.FIPS_FORCE_ENABLE_FIELD_ALERT.configure(this, 1, 3, "W0C", 1, 'h0, 0, 1, 1);
             this.ACMD_FLAG0_FIELD_ALERT = dv_base_reg_field::type_id::create("ACMD_FLAG0_FIELD_ALERT");
-            this.ACMD_FLAG0_FIELD_ALERT.configure(this, 1, 4, "W1C", 1, 'h0, 0, 1, 0);
+            this.ACMD_FLAG0_FIELD_ALERT.configure(this, 1, 4, "W0C", 1, 'h0, 0, 1, 1);
             this.CS_BUS_CMP_ALERT = dv_base_reg_field::type_id::create("CS_BUS_CMP_ALERT");
-            this.CS_BUS_CMP_ALERT.configure(this, 1, 12, "W1C", 1, 'h0, 0, 1, 0);
+            this.CS_BUS_CMP_ALERT.configure(this, 1, 12, "W0C", 1, 'h0, 0, 1, 1);
             this.CMD_STAGE_INVALID_ACMD_ALERT = dv_base_reg_field::type_id::create("CMD_STAGE_INVALID_ACMD_ALERT");
-            this.CMD_STAGE_INVALID_ACMD_ALERT.configure(this, 1, 13, "W1C", 1, 'h0, 0, 1, 0);
+            this.CMD_STAGE_INVALID_ACMD_ALERT.configure(this, 1, 13, "W0C", 1, 'h0, 0, 1, 1);
             this.CMD_STAGE_INVALID_CMD_SEQ_ALERT = dv_base_reg_field::type_id::create("CMD_STAGE_INVALID_CMD_SEQ_ALERT");
-            this.CMD_STAGE_INVALID_CMD_SEQ_ALERT.configure(this, 1, 14, "W1C", 1, 'h0, 0, 1, 0);
+            this.CMD_STAGE_INVALID_CMD_SEQ_ALERT.configure(this, 1, 14, "W0C", 1, 'h0, 0, 1, 1);
             this.CMD_STAGE_RESEED_CNT_ALERT = dv_base_reg_field::type_id::create("CMD_STAGE_RESEED_CNT_ALERT");
-            this.CMD_STAGE_RESEED_CNT_ALERT.configure(this, 1, 15, "W1C", 1, 'h0, 0, 1, 0);
+            this.CMD_STAGE_RESEED_CNT_ALERT.configure(this, 1, 15, "W0C", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(ENABLE_FIELD_ALERT_bit_cg[bt]) ENABLE_FIELD_ALERT_bit_cg[bt] = new();
                 foreach(SW_APP_ENABLE_FIELD_ALERT_bit_cg[bt]) SW_APP_ENABLE_FIELD_ALERT_bit_cg[bt] = new();
@@ -800,57 +800,57 @@ package csrng_uvm;
 
         virtual function void build();
             this.SFIFO_CMD_ERR = dv_base_reg_field::type_id::create("SFIFO_CMD_ERR");
-            this.SFIFO_CMD_ERR.configure(this, 1, 0, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_CMD_ERR.configure(this, 1, 0, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_GENBITS_ERR = dv_base_reg_field::type_id::create("SFIFO_GENBITS_ERR");
-            this.SFIFO_GENBITS_ERR.configure(this, 1, 1, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_GENBITS_ERR.configure(this, 1, 1, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_CMDREQ_ERR = dv_base_reg_field::type_id::create("SFIFO_CMDREQ_ERR");
-            this.SFIFO_CMDREQ_ERR.configure(this, 1, 2, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_CMDREQ_ERR.configure(this, 1, 2, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_RCSTAGE_ERR = dv_base_reg_field::type_id::create("SFIFO_RCSTAGE_ERR");
-            this.SFIFO_RCSTAGE_ERR.configure(this, 1, 3, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_RCSTAGE_ERR.configure(this, 1, 3, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_KEYVRC_ERR = dv_base_reg_field::type_id::create("SFIFO_KEYVRC_ERR");
-            this.SFIFO_KEYVRC_ERR.configure(this, 1, 4, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_KEYVRC_ERR.configure(this, 1, 4, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_UPDREQ_ERR = dv_base_reg_field::type_id::create("SFIFO_UPDREQ_ERR");
-            this.SFIFO_UPDREQ_ERR.configure(this, 1, 5, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_UPDREQ_ERR.configure(this, 1, 5, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_BENCREQ_ERR = dv_base_reg_field::type_id::create("SFIFO_BENCREQ_ERR");
-            this.SFIFO_BENCREQ_ERR.configure(this, 1, 6, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_BENCREQ_ERR.configure(this, 1, 6, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_BENCACK_ERR = dv_base_reg_field::type_id::create("SFIFO_BENCACK_ERR");
-            this.SFIFO_BENCACK_ERR.configure(this, 1, 7, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_BENCACK_ERR.configure(this, 1, 7, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_PDATA_ERR = dv_base_reg_field::type_id::create("SFIFO_PDATA_ERR");
-            this.SFIFO_PDATA_ERR.configure(this, 1, 8, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_PDATA_ERR.configure(this, 1, 8, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_FINAL_ERR = dv_base_reg_field::type_id::create("SFIFO_FINAL_ERR");
-            this.SFIFO_FINAL_ERR.configure(this, 1, 9, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_FINAL_ERR.configure(this, 1, 9, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_GBENCACK_ERR = dv_base_reg_field::type_id::create("SFIFO_GBENCACK_ERR");
-            this.SFIFO_GBENCACK_ERR.configure(this, 1, 10, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_GBENCACK_ERR.configure(this, 1, 10, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_GRCSTAGE_ERR = dv_base_reg_field::type_id::create("SFIFO_GRCSTAGE_ERR");
-            this.SFIFO_GRCSTAGE_ERR.configure(this, 1, 11, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_GRCSTAGE_ERR.configure(this, 1, 11, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_GGENREQ_ERR = dv_base_reg_field::type_id::create("SFIFO_GGENREQ_ERR");
-            this.SFIFO_GGENREQ_ERR.configure(this, 1, 12, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_GGENREQ_ERR.configure(this, 1, 12, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_GADSTAGE_ERR = dv_base_reg_field::type_id::create("SFIFO_GADSTAGE_ERR");
-            this.SFIFO_GADSTAGE_ERR.configure(this, 1, 13, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_GADSTAGE_ERR.configure(this, 1, 13, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_GGENBITS_ERR = dv_base_reg_field::type_id::create("SFIFO_GGENBITS_ERR");
-            this.SFIFO_GGENBITS_ERR.configure(this, 1, 14, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_GGENBITS_ERR.configure(this, 1, 14, "RO", 1, 'h0, 0, 1, 1);
             this.SFIFO_BLKENC_ERR = dv_base_reg_field::type_id::create("SFIFO_BLKENC_ERR");
-            this.SFIFO_BLKENC_ERR.configure(this, 1, 15, "RO", 1, 'h0, 0, 1, 0);
+            this.SFIFO_BLKENC_ERR.configure(this, 1, 15, "RO", 1, 'h0, 0, 1, 1);
             this.CMD_STAGE_SM_ERR = dv_base_reg_field::type_id::create("CMD_STAGE_SM_ERR");
-            this.CMD_STAGE_SM_ERR.configure(this, 1, 20, "RO", 1, 'h0, 0, 1, 0);
+            this.CMD_STAGE_SM_ERR.configure(this, 1, 20, "RO", 1, 'h0, 0, 1, 1);
             this.MAIN_SM_ERR = dv_base_reg_field::type_id::create("MAIN_SM_ERR");
-            this.MAIN_SM_ERR.configure(this, 1, 21, "RO", 1, 'h0, 0, 1, 0);
+            this.MAIN_SM_ERR.configure(this, 1, 21, "RO", 1, 'h0, 0, 1, 1);
             this.DRBG_GEN_SM_ERR = dv_base_reg_field::type_id::create("DRBG_GEN_SM_ERR");
-            this.DRBG_GEN_SM_ERR.configure(this, 1, 22, "RO", 1, 'h0, 0, 1, 0);
+            this.DRBG_GEN_SM_ERR.configure(this, 1, 22, "RO", 1, 'h0, 0, 1, 1);
             this.DRBG_UPDBE_SM_ERR = dv_base_reg_field::type_id::create("DRBG_UPDBE_SM_ERR");
-            this.DRBG_UPDBE_SM_ERR.configure(this, 1, 23, "RO", 1, 'h0, 0, 1, 0);
+            this.DRBG_UPDBE_SM_ERR.configure(this, 1, 23, "RO", 1, 'h0, 0, 1, 1);
             this.DRBG_UPDOB_SM_ERR = dv_base_reg_field::type_id::create("DRBG_UPDOB_SM_ERR");
-            this.DRBG_UPDOB_SM_ERR.configure(this, 1, 24, "RO", 1, 'h0, 0, 1, 0);
+            this.DRBG_UPDOB_SM_ERR.configure(this, 1, 24, "RO", 1, 'h0, 0, 1, 1);
             this.AES_CIPHER_SM_ERR = dv_base_reg_field::type_id::create("AES_CIPHER_SM_ERR");
-            this.AES_CIPHER_SM_ERR.configure(this, 1, 25, "RO", 1, 'h0, 0, 1, 0);
+            this.AES_CIPHER_SM_ERR.configure(this, 1, 25, "RO", 1, 'h0, 0, 1, 1);
             this.CMD_GEN_CNT_ERR = dv_base_reg_field::type_id::create("CMD_GEN_CNT_ERR");
-            this.CMD_GEN_CNT_ERR.configure(this, 1, 26, "RO", 1, 'h0, 0, 1, 0);
+            this.CMD_GEN_CNT_ERR.configure(this, 1, 26, "RO", 1, 'h0, 0, 1, 1);
             this.FIFO_WRITE_ERR = dv_base_reg_field::type_id::create("FIFO_WRITE_ERR");
-            this.FIFO_WRITE_ERR.configure(this, 1, 28, "RO", 1, 'h0, 0, 1, 0);
+            this.FIFO_WRITE_ERR.configure(this, 1, 28, "RO", 1, 'h0, 0, 1, 1);
             this.FIFO_READ_ERR = dv_base_reg_field::type_id::create("FIFO_READ_ERR");
-            this.FIFO_READ_ERR.configure(this, 1, 29, "RO", 1, 'h0, 0, 1, 0);
+            this.FIFO_READ_ERR.configure(this, 1, 29, "RO", 1, 'h0, 0, 1, 1);
             this.FIFO_STATE_ERR = dv_base_reg_field::type_id::create("FIFO_STATE_ERR");
-            this.FIFO_STATE_ERR.configure(this, 1, 30, "RO", 1, 'h0, 0, 1, 0);
+            this.FIFO_STATE_ERR.configure(this, 1, 30, "RO", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(SFIFO_CMD_ERR_bit_cg[bt]) SFIFO_CMD_ERR_bit_cg[bt] = new();
                 foreach(SFIFO_GENBITS_ERR_bit_cg[bt]) SFIFO_GENBITS_ERR_bit_cg[bt] = new();
@@ -906,7 +906,7 @@ package csrng_uvm;
 
         virtual function void build();
             this.ERR_CODE_TEST = dv_base_reg_field::type_id::create("ERR_CODE_TEST");
-            this.ERR_CODE_TEST.configure(this, 5, 0, "RW", 1, 'h0, 0, 1, 0);
+            this.ERR_CODE_TEST.configure(this, 5, 0, "RW", 1, 'h0, 0, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(ERR_CODE_TEST_bit_cg[bt]) ERR_CODE_TEST_bit_cg[bt] = new();
             end
@@ -937,7 +937,7 @@ package csrng_uvm;
 
         virtual function void build();
             this.MAIN_SM_STATE = dv_base_reg_field::type_id::create("MAIN_SM_STATE");
-            this.MAIN_SM_STATE.configure(this, 8, 0, "RO", 1, 'h4e, 1, 1, 0);
+            this.MAIN_SM_STATE.configure(this, 8, 0, "RO", 1, 'h4e, 1, 1, 1);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(MAIN_SM_STATE_bit_cg[bt]) MAIN_SM_STATE_bit_cg[bt] = new();
             end
