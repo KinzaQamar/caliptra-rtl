@@ -171,7 +171,7 @@ virtual function void build();
     {%- else %}
     this.{{get_inst_name(field)}} = new("{{get_inst_name(field)}}");
     {%- endif %}
-    this.{{get_inst_name(field)}}.configure(this, {{field.width}}, {{field.lsb}}, "{{get_field_access(field)}}", {{field.is_volatile|int}}, {{"'h%x" % field.get_property('reset', default=0)}}, {{field.get_property('reset') is not none|int}}, 1, 0);
+    this.{{get_inst_name(field)}}.configure(this, {{field.width}}, {{field.lsb}}, "{{get_field_access(field)}}", {{field.is_volatile|int}}, {{"'h%x" % field.get_property('reset', default=0)}}, {{field.get_property('reset') is not none|int}}, 1, 1);
     {%- endfor %}
     if (has_coverage(UVM_CVR_REG_BITS)) begin
 {%- for field in node.fields() %}
