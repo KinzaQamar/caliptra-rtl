@@ -35,12 +35,17 @@ class csrng_scoreboard extends dv_base_scoreboard #(
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH)))   entropy_src_fifo;
   uvm_tlm_analysis_fifo#(csrng_item)   csrng_cmd_fifo[NUM_HW_APPS];
 
+  // Connects to the AHB monitor's analysis port in csrng_env and gets the full transaction item which
+  // will later used for predictions.
+  uvm_tlm_analysis_fifo #(ahb_txn_item) m_ahb_txn_fifo;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
     entropy_src_fifo = new("entropy_src_fifo", this);
+    m_ahb_txn_fifo   = new("m_ahb_txn_fifo", this);
 
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       csrng_cmd_fifo[i] = new($sformatf("csrng_cmd_fifo[%0d]", i), this);
@@ -61,6 +66,9 @@ class csrng_scoreboard extends dv_base_scoreboard #(
     fork
       collect_seeds();
       handle_disable();
+      forever begin
+        process_ahb_txn();
+      end
     join_none;
 
     for (int i = 0; i < NUM_HW_APPS; i++) begin
@@ -82,6 +90,7 @@ class csrng_scoreboard extends dv_base_scoreboard #(
                    .timeout_ns(1_000_000_000) /* practically forever */);
       `uvm_info(`gfn, "CSRNG disabled, clearing scoreboard state.", UVM_MEDIUM)
       entropy_src_fifo.flush();
+      m_ahb_txn_fifo.flush();
       hw_genbits = '0;
       more_cmd_data = 0;
       for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
@@ -404,6 +413,290 @@ class csrng_scoreboard extends dv_base_scoreboard #(
           cmd_sts[app] = CMD_STS_INVALID_ACMD;
         end
       endcase
+    end
+  endtask
+
+  task process_ahb_txn();
+    uvm_reg        csr;
+    ahb_txn_item   item;
+    bit            read;
+    bit            write;
+    bit            do_read_check;
+    bit            last_word;
+    bit            genbits_valid;
+    uvm_reg_data_t read_data;
+
+    // Get the full AHB transaction item from the AHB monitor.
+    m_ahb_txn_fifo.get(item);
+
+    // Check if the response has been written without any errors and the manager is not sitting in
+    // TransIdle or TransBusy transfer states.
+    if (item.m_response == null ||
+        item.m_response.m_resp  ||
+        !(item.m_request.m_trans inside {TransSequential, TransNonSequential})) begin
+        return;
+    end
+
+    csr = ral.default_map.get_reg_by_offset(item.m_request.m_addr);
+
+    if (csr == null)
+      `uvm_fatal(`gfn, $sformatf("Address 0x%0x is not a valid CSR", item.m_request.m_addr))
+
+    // If incoming access is a write to a valid csr, then make updates right away
+    if (item.m_request.m_write)
+      void'(csr.predict(.value(item.m_request.m_wdata[31:0]),
+                        .kind(UVM_PREDICT_WRITE),
+                        .be(item.m_request.m_wstrb[3:0])));
+
+    read  = !item.m_request.m_write;
+    write = !read;
+
+    case(csr.get_name())
+      // Below CSRs are used to enabling / disabling specific behaviours --- no action required here!
+      "REGWEN", "CTRL", "FIPS_FORCE", "INT_STATE_READ_ENABLE_REGWEN", "INT_STATE_READ_ENABLE" :;
+      "ALERT_TEST" :;
+      "HW_EXC_STS" :;
+
+      // A RW register, in which each field is assigned to an app. Setting this field will set the
+      // number for which internal state can be selected for a read access.
+      "INT_STATE_NUM" :;
+      "INT_STATE_VAL" : begin
+        do_read_check = 1'b0;
+        if (read) begin
+          cov_vif.cg_csrng_otp_en_sw_app_read_sample(
+            .read_int_state_val_reg(1'b1),
+            .read_genbits_reg(1'b0),
+            .otp_en_cs_sw_app_read(cfg.otp_en_cs_sw_app_read),
+            .read_int_state(ral.CTRL.READ_INT_STATE.get_mirrored_value()),
+            .sw_app_enable(ral.CTRL.SW_APP_ENABLE.get_mirrored_value())
+          );
+          csr_rd(.ptr(ral.INT_STATE_NUM), .value(int_state_num), .backdoor(1'b1));
+          csr_rd(.ptr(ral.INT_STATE_READ_ENABLE), .value(int_state_read_enable), .backdoor(1'b1));
+          // Unless reading of the selected internal state is enabled, the returned data must be 0.
+          // If read access is indeed enabled, the actual check is performed by the
+          // check_internal_state() task.
+          if (`gmv(ral.CTRL.READ_INT_STATE) != MuBi4True ||
+              cfg.otp_en_cs_sw_app_read != MuBi8True ||
+              int_state_num > SW_APP ||
+              int_state_read_enable[int_state_num] == 1'b0) begin
+            `DV_CHECK_EQ_FATAL(item.m_response.m_rdata[31:0], 0)
+          end
+        end
+      end
+      "RESEED_INTERVAL":;
+      "RESEED_COUNTER[0]", "RESEED_COUNTER[1]", "RESEED_COUNTER[2]", "MAIN_SM_STATE" :
+        do_read_check = 1'b0;
+      "INTERRUPT_ENABLE" :;
+      "INTERRUPT_STATE" : begin
+        do_read_check = 1'b0;
+        if (read) begin
+          intr_pins = cfg.intr_vif.pins;
+          if (cov_vif.en_full_cov) begin
+            bit [3:0] intr_en = `gmv(ral.INTERRUPT_ENABLE);
+            foreach (intr_pins[i]) begin
+              csrng_intr_e intr = csrng_intr_e'(i);
+              `DV_CHECK_CASE_EQ(intr_pins[i], (intr_en[i] & item.m_response.m_rdata[i]),
+                                $sformatf("Interrupt_pin: %0s", intr.name));
+              if (cfg.en_cov) begin
+                cov.intr_cg.sample(i, intr_en[i], item.m_response.m_rdata[i]);
+                cov.intr_pins_cg.sample(i, intr_pins[i]);
+              end
+            end
+          end
+        end
+      end
+      "INTERRUPT_TEST" : begin
+        if (write && cov_vif.en_full_cov) begin
+          bit [3:0] intr_en  = `gmv(ral.INTERRUPT_ENABLE);
+          bit [3:0] intr_exp = `gmv(ral.INTERRUPT_STATE) | item.m_request.m_wdata[31:0];
+          foreach (intr_exp[i]) begin
+            cov.intr_test_cg.sample(i, item.m_request.m_wdata[i], intr_en[i], intr_exp[i]);
+          end
+        end
+      end
+      "SW_CMD_STS" : begin
+        do_read_check = 1'b0;
+        if (read) begin
+          // If a command is being acknowledged, predict the SW command status
+          // to be equal to the pre-calculated value in cmd_sts.
+          if (item.m_response.m_rdata[2] == 1'b1) begin
+
+            `DV_CHECK_EQ(cmd_sts[SW_APP], item.m_response.m_rdata[5:3])
+          end
+        end
+      end
+      "CMD_REQ" : begin
+        if (write) begin
+          if (!more_cmd_data) begin
+            cs_item[SW_APP]       = csrng_item::type_id::create("cs_item[SW_APP]");
+            cs_item[SW_APP].acmd  = acmd_e'(item.m_request.m_wdata[3:0]);
+            cs_item[SW_APP].clen  = item.m_request.m_wdata[7:4];
+            cs_item[SW_APP].glen  = item.m_request.m_wdata[23:12];
+            cs_item[SW_APP].flags = mubi4_t'(item.m_request.m_wdata[11:8]);
+
+            // Assign it with the number of additional words appended to the command
+            more_cmd_data = cs_item[SW_APP].clen;
+          end
+          else begin
+            // The command consist of additional data words. Grab all the words in cmd_data_q that could
+            // later be use to evaluate the seed based on flag0 value.
+            cs_item[SW_APP].cmd_data_q.push_back(item.m_request.m_wdata[31:0]);
+
+            // Update more_cmd_data with the num of remaining words
+            more_cmd_data --;
+          end
+
+          cov_vif.cg_cmds_sample(SW_APP, cs_item[SW_APP], cmd_flag0_previous[SW_APP]);
+
+          // If this is the first request consist of command header with a non-zero value in clen
+          // field than the loop below will be evaluated once all the additional data words are
+          // collected in cmd_data_q.
+          if (!more_cmd_data) begin
+            for (int i = 0; i < cs_item[SW_APP].cmd_data_q.size(); i++) begin
+              cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * CmdBusWidth) +
+                                 cs_data[SW_APP];
+            end
+
+            case (cs_item[SW_APP].acmd)
+              INS: begin
+                // Record previous flag0 only after INS or RES commands.
+                cmd_flag0_previous[SW_APP] = cs_item[SW_APP].flags;
+                if (cs_item[SW_APP].flags != MuBi4True) begin
+                  // Get seed
+                  bit disabled;
+                  wait_es_item_or_disable(SW_APP, disabled);
+                  if (disabled) begin
+                    `uvm_info(`gfn,
+                        "Stopping to wait for entropy due to disable - Instantiate of SW_APP",
+                        UVM_MEDIUM)
+                    return;
+                  end
+                  es_item[SW_APP] = es_item_q[SW_APP].pop_front;
+                  es_data[SW_APP] = es_item[SW_APP].d_data[CSRNG_BUS_WIDTH-1:0];
+                  fips[SW_APP]    = es_item[SW_APP].d_data[CSRNG_BUS_WIDTH];
+                end
+                ctr_drbg_instantiate(SW_APP, es_data[SW_APP], cs_data[SW_APP], fips[SW_APP]);
+              end
+              RES: begin
+                // Record previous flag0 only after INS or RES commands.
+                cmd_flag0_previous[SW_APP] = cs_item[SW_APP].flags;
+                if (cs_item[SW_APP].flags != MuBi4True) begin
+                  // Get seed
+                  bit disabled;
+                  wait_es_item_or_disable(SW_APP, disabled);
+                  if (disabled) begin
+                    `uvm_info(`gfn,
+                        "Stopping to wait for entropy due to disable - Reseed of SW_APP",
+                        UVM_MEDIUM)
+                    return;
+                  end
+                  es_item[SW_APP] = es_item_q[SW_APP].pop_front;
+                  es_data[SW_APP] = es_item[SW_APP].d_data[CSRNG_BUS_WIDTH-1:0];
+                  fips[SW_APP]    = es_item[SW_APP].d_data[CSRNG_BUS_WIDTH];
+                end
+                ctr_drbg_reseed(SW_APP, es_data[SW_APP], cs_data[SW_APP], fips[SW_APP]);
+              end
+              UPD: begin
+                ctr_drbg_update(SW_APP, cs_data[SW_APP]);
+              end
+              UNI: begin
+                ctr_drbg_uninstantiate(SW_APP);
+              end
+              default: begin
+                if (!GEN) begin
+                  // Expect the next acknowledgement to return an error.
+                  cmd_sts[SW_APP] = CMD_STS_INVALID_ACMD;
+                end
+              end
+            endcase
+            cs_data[SW_APP] = 'h0;
+            es_data[SW_APP] = 'h0;
+            fips[SW_APP]    = 'h0;
+          end
+        end
+      end
+      "GENBITS_VLD": begin
+        do_read_check = 0;
+        if (read) begin
+          cov_vif.cg_csrng_genbits_sample(
+              .genbits_fips(item.m_response.m_rdata[1]),
+              .genbits_fips_previous(genbits_fips_previous[SW_APP]),
+              .app(SW_APP),
+              .valid(item.m_response.m_rdata[0]),
+              .record_transition(genbits_fips_received[SW_APP] && item.m_response.m_rdata[0]));
+          // Record the previous fips bit only if the current valid bit is high.
+          if (item.m_response.m_rdata[0]) begin
+            genbits_fips_previous[SW_APP] = item.m_response.m_rdata[1];
+            genbits_fips_received[SW_APP] = 1'b1;
+          end
+        end
+      end
+      "GENBITS": begin
+        // Only trace genbits if the genbits_vld flag is high. Since the flag is cleared
+        // right when genbits are read we can not just check the value via backdoor.
+        // The flag is cleared if the CSRNG is disabled or when the last word of the genbits
+        // is read. After a clear the genbits_vld will still be high after the first three
+        // reads. For the last read we can just check whether there is only one word left.
+        csr_rd(.ptr(ral.GENBITS_VLD), .value(read_data), .blocking(1'b1), .backdoor(1'b1));
+        last_word = (hw_genbits_reg_q.size() == (GENBITS_BUS_WIDTH/AHBDataWidth - 1));
+        genbits_valid = read_data & 1'b1;
+        if (genbits_valid || last_word) begin
+          do_read_check = 1'b0;
+          if (read) begin
+            cov_vif.cg_csrng_otp_en_sw_app_read_sample(
+              .read_int_state_val_reg(1'b0),
+              .read_genbits_reg(1'b1),
+              .otp_en_cs_sw_app_read(cfg.otp_en_cs_sw_app_read),
+              .read_int_state(ral.CTRL.READ_INT_STATE.get_mirrored_value()),
+              .sw_app_enable(ral.CTRL.SW_APP_ENABLE.get_mirrored_value())
+            );
+            hw_genbits_reg_q.push_back(item.m_response.m_rdata[31:0]);
+            // Check if the FIPS compliance bit is set correctly.
+            `DV_CHECK_EQ_FATAL((read_data >> 1) & 1'b1, cfg.compliance[SW_APP])
+          end
+          if (hw_genbits_reg_q.size() == GENBITS_BUS_WIDTH/AHBDataWidth) begin
+            for (int i = 0; i < hw_genbits_reg_q.size(); i++) begin
+              hw_genbits += hw_genbits_reg_q[i] << i*AHBDataWidth;
+            end
+            cs_item[SW_APP].genbits_q.push_back(hw_genbits);
+            hw_genbits_reg_q.delete();
+            hw_genbits = '0;
+          end
+          if (cs_item[SW_APP].genbits_q.size() == cs_item[SW_APP].glen) begin
+            for (int i = 0; i < cs_item[SW_APP].cmd_data_q.size(); i++) begin
+              cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * CmdBusWidth) +
+                  cs_data[SW_APP];
+            end
+            ctr_drbg_generate(SW_APP, cs_item[SW_APP].glen, cs_data[SW_APP]);
+            for (int i = 0; i < cs_item[SW_APP].glen; i++) begin
+              `DV_CHECK_EQ_FATAL(cs_item[SW_APP].genbits_q[i], prd_genbits_q[SW_APP][i])
+            end
+            prd_genbits_q[SW_APP].delete();
+            cs_data[SW_APP] = 'h0;
+          end
+        end
+      end
+      "RECOV_ALERT_STS" :;
+      "ERR_CODE": begin
+        if (read && cov_vif.en_full_cov) begin
+          cov_vif.cg_err_code_sample(item.m_response.m_rdata[31:0]);
+        end
+      end
+      "ERR_CODE_TEST": begin
+        if (read && cov_vif.en_full_cov) begin
+          cov_vif.cg_err_test_sample(item.m_response.m_rdata[4:0]);
+        end
+      end
+      default :
+        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+    endcase
+    // On reads, if do_read_check, is set, then check mirrored_value against item.m_response.m_rdata
+    if (read) begin
+      if (do_read_check) begin
+        `DV_CHECK_EQ(csr.get_mirrored_value(), item.m_response.m_rdata[31:0],
+                     $sformatf("reg name: %0s", csr.get_full_name()))
+      end
+      void'(csr.predict(.value(item.m_response.m_rdata[31:0]), .kind(UVM_PREDICT_READ)));
     end
   endtask
 endclass
