@@ -15,6 +15,10 @@ class csrng_env extends dv_base_env #(
   push_pull_agent#(.HostDataWidth(1)) m_aes_halt_agent;
   csrng_agent                         m_edn_agent[NUM_HW_APPS];
   ahb_mgr_agent                       ahb_agent;
+
+  // A reg_predictor used for update and mirror register values.
+  local uvm_reg_predictor #(ahb_txn_item) m_reg_predictor;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -70,6 +74,10 @@ class csrng_env extends dv_base_env #(
     // Create AHB manager agent
     ahb_agent = ahb_mgr_agent::type_id::create("ahb_agent", this);
 
+    m_reg_predictor = uvm_reg_predictor#(ahb_txn_item)::type_id::create("m_reg_predictor", this);
+    m_reg_predictor.adapter = ahb_mgr_reg_adapter::type_id::create("adapter");
+    m_reg_predictor.map = cfg.ral.default_map;
+
     // Get interrupt interface from uvm_config_db.
     if (!uvm_config_db#(intr_vif)::get(this, "", "intr_vif", cfg.intr_vif) &&
         cfg.num_interrupts > 0) begin
@@ -88,6 +96,7 @@ class csrng_env extends dv_base_env #(
 
     super.connect_phase(phase);
     if (cfg.en_scb) begin
+      ahb_agent.m_transaction_port.connect(scoreboard.m_ahb_txn_fifo.analysis_export);
       m_entropy_src_agent.monitor.analysis_port.connect(
         scoreboard.entropy_src_fifo.analysis_export);
       for (int i = 0; i < NUM_HW_APPS; i++) begin
@@ -117,6 +126,8 @@ class csrng_env extends dv_base_env #(
     foreach (maps[i]) begin
       ahb_agent.register_subordinate_for_map(maps[i], cfg.m_subordinate_idx);
     end
+
+    ahb_agent.m_transaction_port.connect(m_reg_predictor.bus_in);
   endfunction
 
 endclass
