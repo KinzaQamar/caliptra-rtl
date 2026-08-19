@@ -16,6 +16,7 @@ package csrng_env_pkg;
   import entropy_src_pkg::*;
   import csrng_pkg::*;
   import lc_ctrl_pkg::*;
+  import ahb_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

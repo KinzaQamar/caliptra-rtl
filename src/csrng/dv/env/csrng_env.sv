@@ -74,6 +74,7 @@ class csrng_env extends dv_base_env #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.en_scb) begin
+      ahb_agent.m_transaction_port.connect(scoreboard.m_ahb_txn_fifo.analysis_export);
       m_entropy_src_agent.monitor.analysis_port.connect(
         scoreboard.entropy_src_fifo.analysis_export);
       for (int i = 0; i < NUM_HW_APPS; i++) begin

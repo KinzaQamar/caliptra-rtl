@@ -14,6 +14,9 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
   COV_T                      cov;
   ahb_mgr_agent              ahb_agent;
 
+  // A reg_predictor used for update and mirror register values.
+  local uvm_reg_predictor #(ahb_txn_item) m_reg_predictor;
+
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
@@ -62,6 +65,10 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
 
     // Create AHB manager agent
     ahb_agent = ahb_mgr_agent::type_id::create("ahb_agent", this);
+
+    m_reg_predictor = uvm_reg_predictor#(ahb_txn_item)::type_id::create("m_reg_predictor", this);
+    m_reg_predictor.adapter = ahb_mgr_reg_adapter::type_id::create("adapter");
+    m_reg_predictor.map = cfg.ral.default_map;
 
     if (cfg.en_cov) begin
       cov = COV_T::type_id::create("cov", this);
@@ -115,5 +122,7 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
     foreach (maps[i]) begin
       ahb_agent.register_subordinate_for_map(maps[i], cfg.m_subordinate_idx);
     end
+
+    ahb_agent.m_transaction_port.connect(m_reg_predictor.bus_in);
   endfunction
 endclass
