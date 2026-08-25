@@ -53,6 +53,12 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   //  - Check for reset every so often (to run quickly to completion if a reset has been applied).
   bit can_reset_with_csr_accesses = 1'b0;
 
+  // The subordinate index on the AHB bus. This is used to constrain HSEL when sending AHB sequence items.
+  //
+  // This must be configured by the testbench (and is initialised to a known-bad default value to
+  // check this happens).
+  int unsigned m_subordinate_idx = ~0;
+
   // The type_name of the base RAL type (RAL_T). This is exposed explicitly, rather than being
   // accessed through RAL_T::type_name, because this allows subclasses of dv_base_env_cfg to
   // override the base RAL type without messing up the parameterized class type.
@@ -97,6 +103,9 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
   // The interface for interrupts
   intr_vif intr_vif;
+
+  // Handle to AHB agent
+  virtual ahb_if m_ahb_vif;
 
   // The frequency of the clock and reset assoicated with the default RAL.
   rand uint clk_freq_mhz;

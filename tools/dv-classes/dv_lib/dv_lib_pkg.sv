@@ -10,6 +10,7 @@ package dv_lib_pkg;
   import dv_base_reg_pkg::*;
   import dv_base_agent_pkg::*;
   import prim_mubi_pkg::*;
+  import ahb_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

@@ -14,6 +14,7 @@ filesets:
       - lowrisc:dv:dv_base_agent
       - lowrisc:dv:common_ifs
       - lowrisc:prim:mubi_pkg
+      - lowrisc:dv:ahb_agent
     files:
       - dv_lib_pkg.sv
 

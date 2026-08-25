@@ -126,9 +126,17 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     void'($value$plusargs("poll_for_stop_interval_ns=%0d", poll_for_stop_interval_ns));
     if (poll_for_stop) dv_utils_pkg::poll_for_stop(.interval_ns(poll_for_stop_interval_ns));
     void'($value$plusargs("UVM_TEST_SEQ=%0s", test_seq_s));
-    if (run_test_seq) begin
-      run_seq(test_seq_s, phase);
-    end
+
+    fork
+      begin
+        if (run_test_seq) begin
+          run_seq(test_seq_s, phase);
+        end
+      end
+      begin
+        if (cfg.is_active) env.ahb_agent.run_layered_register_vseq();
+      end
+    join
   endtask : run_phase
 
   // Add message demotes here - hook to use by extended tests

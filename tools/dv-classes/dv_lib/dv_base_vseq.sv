@@ -307,7 +307,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
 
     act_pins = cfg.intr_vif.sample() & interrupts;
     if (check_set) begin
-      csr_intr_enable = ral.get_dv_base_reg_by_name("intr_enable");
+      csr_intr_enable = ral.get_dv_base_reg_by_name("INTERRUPT_ENABLE");
       exp_pins = interrupts & csr_intr_enable.get_mirrored_value();
       exp_intr_state = interrupts;
     end else begin
@@ -315,7 +315,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
       exp_intr_state = ~interrupts;
     end
     `DV_CHECK_EQ(act_pins, exp_pins)
-    csr_intr_state = ral.get_dv_base_reg_by_name("intr_state");
+    csr_intr_state = ral.get_dv_base_reg_by_name("INTERRUPT_STATE");
     csr_rd_check(.ptr(csr_intr_state), .compare_value(exp_intr_state), .compare_mask(interrupts));
 
     if (check_set && |(interrupts & clear)) begin

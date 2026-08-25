@@ -12,6 +12,7 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
   VIRTUAL_SEQUENCER_T        virtual_sequencer;
   SCOREBOARD_T               scoreboard;
   COV_T                      cov;
+  ahb_mgr_agent              ahb_agent;
 
   `uvm_component_new
 
@@ -22,6 +23,18 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
     // get dv_base_env_cfg object from uvm_config_db
     if (!uvm_config_db#(CFG_T)::get(this, "", "cfg", cfg)) begin
       `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", cfg.get_type_name()))
+    end
+
+    // Get interrupt interface from uvm_config_db.
+    if (!uvm_config_db#(intr_vif)::get(this, "", "intr_vif", cfg.intr_vif) &&
+        cfg.num_interrupts > 0) begin
+      `uvm_fatal(get_full_name(), "failed to get intr_vif from uvm_config_db")
+    end
+
+    // Get AHB sub-ordinate index from uvm_config_db.
+    if (!uvm_config_db#(int unsigned)::get(this, "", "ahb_subordinate_index",
+                                           cfg.m_subordinate_idx)) begin
+      `uvm_fatal(get_full_name(), "No subordinate index supplied to environment.")
     end
 
     // Make sure the map in cfg from RAL name to clk_rst_if is populated. Copy the clock frequencies
@@ -47,7 +60,9 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
       cfg.clk_rst_vif.set_freq_mhz(cfg.clk_freq_mhz);
     end
 
-    // create components
+    // Create AHB manager agent
+    ahb_agent = ahb_mgr_agent::type_id::create("ahb_agent", this);
+
     if (cfg.en_cov) begin
       cov = COV_T::type_id::create("cov", this);
       cov.cfg = cfg;
@@ -83,4 +98,22 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
     cfg.clk_rst_vifs[ral_name].set_freq_mhz(cfg.clk_freqs_mhz[ral_name]);
   endfunction
 
+  function void connect_phase(uvm_phase phase);
+    uvm_reg_map maps[$];
+
+    super.connect_phase(phase);
+
+    // Bind the RAL default_map to the AHB sequencer + adapter so register accesses are issued via
+    // the AHB agent.
+    if (ahb_agent.get_is_active() == UVM_ACTIVE) begin
+      cfg.ral.default_map.set_sequencer(ahb_agent.get_register_layering_sequencer(),
+                                        ahb_agent.get_reg_adapter());
+    end
+
+    // Tell the AHB agent which registers are mapped to which subordinate.
+    cfg.ral.get_maps(maps);
+    foreach (maps[i]) begin
+      ahb_agent.register_subordinate_for_map(maps[i], cfg.m_subordinate_idx);
+    end
+  endfunction
 endclass
