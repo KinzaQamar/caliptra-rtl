@@ -12,11 +12,9 @@ class csrng_env extends dv_base_env #(
 
   push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       m_entropy_src_agent;
-  push_pull_agent#(.HostDataWidth(1))
-      m_aes_halt_agent;
-  csrng_agent
-      m_edn_agent[NUM_HW_APPS];
-
+  push_pull_agent#(.HostDataWidth(1)) m_aes_halt_agent;
+  csrng_agent                         m_edn_agent[NUM_HW_APPS];
+  ahb_mgr_agent                       ahb_agent;
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -69,9 +67,25 @@ class csrng_env extends dv_base_env #(
       `uvm_fatal(`gfn, "failed to get csrng_agents_vif from uvm_config_db")
     end
 
+    // Create AHB manager agent
+    ahb_agent = ahb_mgr_agent::type_id::create("ahb_agent", this);
+
+    // Get interrupt interface from uvm_config_db.
+    if (!uvm_config_db#(intr_vif)::get(this, "", "intr_vif", cfg.intr_vif) &&
+        cfg.num_interrupts > 0) begin
+      `uvm_fatal(get_full_name(), "failed to get intr_vif from uvm_config_db")
+    end
+
+    // Get AHB sub-ordinate index from uvm_config_db.
+    if (!uvm_config_db#(int unsigned)::get(this, "", "ahb_subordinate_index",
+                                           cfg.m_subordinate_idx)) begin
+      `uvm_fatal(get_full_name(), "No subordinate index supplied to environment.")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
+    uvm_reg_map maps[$];
+
     super.connect_phase(phase);
     if (cfg.en_scb) begin
       m_entropy_src_agent.monitor.analysis_port.connect(
@@ -89,6 +103,19 @@ class csrng_env extends dv_base_env #(
         if (cfg.m_edn_agent_cfg[i].is_active)
           virtual_sequencer.edn_sequencer_h[i] = m_edn_agent[i].sequencer;
       end
+    end
+
+    // Bind the RAL default_map to the AHB sequencer + adapter so register accesses are issued via
+    // the AHB agent.
+    if (ahb_agent.get_is_active() == UVM_ACTIVE) begin
+      cfg.ral.default_map.set_sequencer(ahb_agent.get_register_layering_sequencer(),
+                                        ahb_agent.get_reg_adapter());
+    end
+
+    // Tell the AHB agent which registers are mapped to which subordinate.
+    cfg.ral.get_maps(maps);
+    foreach (maps[i]) begin
+      ahb_agent.register_subordinate_for_map(maps[i], cfg.m_subordinate_idx);
     end
   endfunction
 

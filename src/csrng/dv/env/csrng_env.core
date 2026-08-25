@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:csrng_agent
       - lowrisc:dv:csr_utils
       - lowrisc:dv:aes_model_dpi
+      - lowrisc:dv:ahb_agent
     files:
       - csrng_env_pkg.sv
       - csrng_agents_if.sv

@@ -27,8 +27,15 @@ class csrng_env_cfg extends dv_base_env_cfg #(.RAL_T(csrng_reg_block));
   // The interface for interrupts
   intr_vif intr_vif;
 
+  // Number of interrupts and EDN connected to this environment.
   int unsigned num_interrupts;
   int unsigned num_edn;
+
+  // The subordinate index on the AHB bus. This is used to constrain HSEL when sending AHB sequence items.
+  //
+  // This must be configured by the testbench (and is initialised to a known-bad default value to
+  // check this happens).
+  int unsigned m_subordinate_idx = ~0;
 
   // Knobs & Weights
   uint otp_en_cs_sw_app_read_pct, otp_en_cs_sw_app_read_inval_pct, lc_hw_debug_en_pct, regwen_pct,
@@ -242,6 +249,10 @@ class csrng_env_cfg extends dv_base_env_cfg #(.RAL_T(csrng_reg_block));
   endfunction // post_randomize
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
+    // Set the ral_type_name to be csrng_reg_block so that dv_base_env_cfg::make_ral_model() could
+    // create a ral model for that.
+    ral_type_name = "csrng_reg_block";
+
     initialize_ral(`UVM_REG_ADDR_WIDTH,
                    `UVM_REG_DATA_WIDTH,
                    `UVM_REG_BYTENABLE_WIDTH);

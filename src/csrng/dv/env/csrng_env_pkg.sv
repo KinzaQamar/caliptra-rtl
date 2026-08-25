@@ -17,6 +17,7 @@ package csrng_env_pkg;
   import csrng_pkg::*;
   import lc_ctrl_pkg::*;
   import dv_base_reg_pkg::*;
+  import ahb_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
