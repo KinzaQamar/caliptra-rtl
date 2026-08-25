@@ -37,4 +37,11 @@ class csrng_base_test extends dv_base_test #(
     cfg.int_state_read_enable_regwen_pct = 50;
   endfunction
 
+  virtual task run_phase(uvm_phase phase);
+    fork
+      super.run_phase(phase);
+      if (cfg.is_active) env.ahb_agent.run_layered_register_vseq();
+    join
+  endtask
+
 endclass : csrng_base_test

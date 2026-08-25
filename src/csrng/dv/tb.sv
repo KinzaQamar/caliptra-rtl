@@ -26,18 +26,6 @@ module tb;
   csrng_pkg::csrng_req_t[NUM_HW_APPS-1:0]   csrng_cmd_req;
   csrng_pkg::csrng_rsp_t[NUM_HW_APPS-1:0]   csrng_cmd_rsp;
 
-  // AMBA AHB Lite Interface
-  logic [AHBAddrWidth-1:0]  haddr_i;
-  logic [AHBDataWidth-1:0]  hwdata_i;
-  logic                     hsel_i;
-  logic                     hwrite_i;
-  logic                     hready_i;
-  logic [1:0]               htrans_i;
-  logic [2:0]               hsize_i;
-  logic                     hresp_o;
-  logic                     hreadyout_o;
-  logic [AHBDataWidth-1:0]  hrdata_o;
-
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if#(NUM_MAX_INTERRUPTS) intr_if(interrupts);
@@ -50,6 +38,7 @@ module tb;
   push_pull_if#(.HostDataWidth(1))   aes_halt_if(.clk(clk), .rst_n(rst_n));
   csrng_path_if csrng_path_if (.csrng_cmd_i(csrng_cmd_i));
   csrng_assert_if csrng_assert_if (.csrng_cmd_i(csrng_cmd_i));
+  ahb_if ahb_if (.clk_i(clk), .rst_ni(rst_n));
 
   // All CSRNG-EDN interfaces (and therefore EDN agents) can currently only be disabled together.
   assign edn_disable = csrng_agents_if.edn_disable;
@@ -58,23 +47,25 @@ module tb;
   // dut
   csrng#(.NHwApps(NUM_HW_APPS),
          .RndCnstCsKeymgrDivNonProduction(LC_HW_DEBUG_EN_ON_DATA),
-         .RndCnstCsKeymgrDivProduction(LC_HW_DEBUG_EN_OFF_DATA))
+         .RndCnstCsKeymgrDivProduction(LC_HW_DEBUG_EN_OFF_DATA),
+         .AHBDataWidth(AHBDataWidth),
+         .AHBAddrWidth(AHBAddrWidth))
   dut (
-    .clk_i                      (clk      ),
-    .rst_ni                     (rst_n    ),
+    .clk_i                      (clk  ),
+    .rst_ni                     (rst_n),
 
     // AMBA AHB Lite Interface
-    .haddr_i,
-    .hwdata_i,
-    .hsel_i,
-    .hwrite_i,
-    .hready_i,
-    .htrans_i,
-    .hsize_i,
+    .haddr_i                    (ahb_if.haddr),
+    .hwdata_i                   (ahb_if.hwdata),
+    .hsel_i                     (ahb_if.hsel),
+    .hwrite_i                   (ahb_if.hwrite),
+    .hready_i                   (ahb_if.hready),
+    .htrans_i                   (ahb_if.htrans),
+    .hsize_i                    (ahb_if.hsize),
 
-    .hresp_o,
-    .hreadyout_o,
-    .hrdata_o,
+    .hresp_o                    (ahb_if.hresp),
+    .hreadyout_o                (ahb_if.hreadyout),
+    .hrdata_o                   (ahb_if.hrdata),
 
     .otp_en_csrng_sw_app_read_i (caliptra_prim_mubi_pkg::mubi8_t'(otp_en_cs_sw_app_read)),
 
@@ -91,7 +82,7 @@ module tb;
     .csrng_cmd_i                (csrng_cmd_req),
     .csrng_cmd_o                (csrng_cmd_rsp),
 
-    .alert_rx_i                 (),
+    .alert_rx_i                 ('0),
     .alert_tx_o                 (),
 
     .intr_cs_cmd_req_done_o     (intr_cmd_req_done),
@@ -117,6 +108,9 @@ module tb;
   assign aes_halt_if.d_data = '0;
 
   initial begin
+    // AHB interface acts as a manager on the bus
+    ahb_if.if_mode = Host;
+
     // Drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
@@ -135,6 +129,8 @@ module tb;
     uvm_config_db#(virtual csrng_path_if)::set(null, "*.env", "csrng_path_vif", csrng_path_if);
     uvm_config_db#(virtual csrng_agents_if)::set(null, "*.env", "csrng_agents_vif",
                                                  csrng_agents_if);
+    uvm_config_db#(virtual ahb_if)::set(null, "*.env.ahb_agent", "vif", ahb_if);
+    uvm_config_db#(int unsigned)::set(null, "*.env", "ahb_subordinate_index", 0);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
