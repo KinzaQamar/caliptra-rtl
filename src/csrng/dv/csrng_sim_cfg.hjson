@@ -49,7 +49,10 @@
   uvm_test: csrng_base_test
   uvm_test_seq: csrng_base_vseq
 
-  build_opts: ["+define+CLP_ASSERT_ON"]
+  // UVM_HDL_MAX_WIDTH by default is 1024 bits which is too less for some signals when using
+  // uvm_hdl_force() to force a value on them. That will lead to garbage X's and Z's on bits
+  // onwards 1024.
+  build_opts: ["+define+CLP_ASSERT_ON", "+define+UVM_HDL_MAX_WIDTH=2048"]
 
   // Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]

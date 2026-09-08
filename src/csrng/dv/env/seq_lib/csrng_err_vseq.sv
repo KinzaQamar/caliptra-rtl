@@ -27,7 +27,7 @@ class csrng_err_vseq extends csrng_base_vseq;
     string        fifo_err_path [2][string];
     bit           fifo_err_value [2][string];
     string        path_key;
-    string        reg_name, fld_name;
+    string        reg_name, fld_name, reg_field_name;
     uvm_reg       csr;
     uvm_reg_field fld;
     bit [31:0]    backdoor_err_code_val;
@@ -64,6 +64,11 @@ class csrng_err_vseq extends csrng_base_vseq;
     $assertoff(0, `HIER_PATH(`CMD_STAGE_1, CsrngCmdStageGenbitsFifoPushExpected_A));
     $assertoff(0, `HIER_PATH(`CMD_STAGE_2, CsrngCmdStageGenbitsFifoPushExpected_A));
     cfg.csrng_assert_vif.assert_off();
+
+    // Alerts are not connected to a receiver in caliptra_rtl but they prim_alert_sender exist in
+    // csrng.sv due to which few "bad events leads to an alert" assertions going to fail
+    cfg.csrng_assert_vif.assert_off_alert();
+
     `DV_ASSERT_CTRL_REQ("CmdStageFifoAsserts", 0)
 
     cs_item = csrng_item::type_id::create("cs_item");
@@ -85,9 +90,12 @@ class csrng_err_vseq extends csrng_base_vseq;
     // Not waiting for response so the error happens in the middle of the generate command.
     send_cmd_req(cfg.which_app_err_alert, cs_item, .await_response(1'b0));
 
-    reg_name = "err_code";
+    reg_name = "ERR_CODE";
     csr = ral.get_reg_by_name(reg_name);
     fld_name = cfg.which_err_code.name();
+
+    // All the register fields are generated with uppercase letters
+    reg_field_name = fld_name.toupper();
 
     first_index = find_index("_", fld_name, "first");
     last_index = find_index("_", fld_name, "last");
@@ -100,7 +108,7 @@ class csrng_err_vseq extends csrng_base_vseq;
       sfifo_bencreq_err, sfifo_final_err, sfifo_gbencack_err, sfifo_grcstage_err,
       sfifo_gadstage_err, sfifo_ggenbits_err, sfifo_blkenc_err, sfifo_updreq_err,
       sfifo_bencack_err, sfifo_pdata_err, sfifo_ggenreq_err: begin
-        fld = csr.get_field_by_name(fld_name);
+        fld = csr.get_field_by_name(reg_field_name);
         fifo_base_path = fld_name.substr(0, last_index-1);
 
         foreach (path_exts[i]) begin
@@ -152,7 +160,7 @@ class csrng_err_vseq extends csrng_base_vseq;
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
       cmd_stage_sm_err, main_sm_err, drbg_gen_sm_err, drbg_updbe_sm_err, drbg_updob_sm_err: begin
-        fld = csr.get_field_by_name(fld_name);
+        fld = csr.get_field_by_name(reg_field_name);
         path = cfg.csrng_path_vif.sm_err_path(fld_name.substr(0, last_index-1),
                                               cfg.which_app_err_alert);
         force_path_err(path, 8'b0, fld, 1'b1);
@@ -169,7 +177,7 @@ class csrng_err_vseq extends csrng_base_vseq;
         end else begin
           aes_fsm_path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "n");
         end
-        fld = csr.get_field_by_name(fld_name);
+        fld = csr.get_field_by_name(reg_field_name);
         case (cfg.which_aes_cm) inside
           fsm_sparse, fsm_redun: begin
             if (cfg.which_aes_cm == fsm_sparse) begin
@@ -216,17 +224,17 @@ class csrng_err_vseq extends csrng_base_vseq;
         string sm_state_path = cfg.csrng_path_vif.sm_err_path("main_sm", cfg.which_app_err_alert);
         case(cfg.which_cnt) inside
           cmd_gen_cnt_sel: begin
-            fld = csr.get_field_by_name(fld_name);
+            fld = csr.get_field_by_name(reg_field_name);
             path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.which_app_err_alert);
             force_cnt_err(path, fld, 1'b1, 13);
           end
           drbg_upd_cnt_sel: begin
-            fld = csr.get_field_by_name(fld_name);
+            fld = csr.get_field_by_name(reg_field_name);
             path = cfg.csrng_path_vif.drbg_upd_cnt_err_path();
             force_cnt_err(path, fld, 1'b1, 32);
           end
           drbg_gen_cnt_sel: begin
-            fld = csr.get_field_by_name(fld_name);
+            fld = csr.get_field_by_name(reg_field_name);
             path = cfg.csrng_path_vif.drbg_gen_cnt_err_path();
             force_cnt_err(path, fld, 1'b1, 32);
           end
@@ -239,7 +247,7 @@ class csrng_err_vseq extends csrng_base_vseq;
         `DV_CHECK_EQ(sm_state, csrng_pkg::MainSmError)
       end
       fifo_write_err, fifo_read_err, fifo_state_err: begin
-        fld = csr.get_field_by_name(fld_name);
+        fld = csr.get_field_by_name(reg_field_name);
         fifo_name = cfg.which_fifo.name();
         `uvm_info(`gfn, $sformatf("Injecting fault in %s", fifo_name), UVM_MEDIUM)
         path_key = fld_name.substr(first_index+1, last_index-1);
@@ -307,7 +315,8 @@ class csrng_err_vseq extends csrng_base_vseq;
       sfifo_blkenc_err_test, cmd_stage_sm_err_test, main_sm_err_test, drbg_gen_sm_err_test,
       drbg_updbe_sm_err_test, drbg_updob_sm_err_test, aes_cipher_sm_err_test, cmd_gen_cnt_err_test,
       fifo_write_err_test, fifo_read_err_test, fifo_state_err_test: begin
-        fld = csr.get_field_by_name(fld_name.substr(0, last_index-1));
+        // All the register fields are generated with uppercase letters
+        fld = csr.get_field_by_name(reg_field_name.substr(0, last_index-1));
         err_code_test_bit = fld.get_lsb_pos();
         csr_wr(.ptr(ral.ERR_CODE_TEST.ERR_CODE_TEST), .value(err_code_test_bit));
         cfg.clk_rst_vif.wait_clks(50);
