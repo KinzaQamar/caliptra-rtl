@@ -64,15 +64,15 @@ interface csrng_path_if
 
   function automatic string cmd_gen_cnt_err_path(int app);
     return {core_path, $sformatf(".gen_cmd_stage[%0d]", app),
-            ".u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr.cnt_q[1]"};
+            ".u_csrng_cmd_stage.u_caliptra_prim_count_cmd_gen_cntr.cnt_q[1]"};
   endfunction // cmd_gen_cnt_err_path
 
   function automatic string drbg_upd_cnt_err_path();
-    return {core_path, ".u_csrng_ctr_drbg_upd.u_prim_count_ctr_drbg.cnt_q[1]"};
+    return {core_path, ".u_csrng_ctr_drbg_upd.u_caliptra_prim_count_ctr_drbg.cnt_q[1]"};
   endfunction // drbg_upd_cnt_err_path
 
   function automatic string drbg_gen_cnt_err_path();
-    return {core_path, ".u_csrng_ctr_drbg_gen.u_prim_count_ctr_drbg.cnt_q[1]"};
+    return {core_path, ".u_csrng_ctr_drbg_gen.u_caliptra_prim_count_ctr_drbg.cnt_q[1]"};
   endfunction // drbg_gen_cnt_err_path
 
   function automatic string csrng_core_path(string path_ext);
