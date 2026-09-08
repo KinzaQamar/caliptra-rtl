@@ -5,10 +5,12 @@
 // Interface: csrng_assert_if
 // Description: Asserts interface to turn off assertions that have long paths
 
+`define PATH \
+    tb.dut
 `define PATH1 \
-    tb.dut.u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage
+    `PATH.u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage
 `define PATH2 \
-    tb.dut.u_csrng_core.u_csrng_block_encrypt.u_aes_cipher_core.u_aes_cipher_control
+    `PATH.u_csrng_core.u_csrng_block_encrypt.u_aes_cipher_core.u_aes_cipher_control
 `define PATH2_1 \
     gen_fsm[0].gen_fsm_p.u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm
 `define PATH2_2 \
@@ -16,17 +18,17 @@
 `define PATH2_3 \
     gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm
 `define PATH3 \
-    tb.dut.u_csrng_core.u_prim_mubi4_sync_cs_enable
+    `PATH.u_csrng_core.u_prim_mubi4_sync_cs_enable
 `define PATH4 \
-    tb.dut.u_csrng_core.u_prim_mubi4_sync_sw_app_enable
+    `PATH.u_csrng_core.u_prim_mubi4_sync_sw_app_enable
 `define PATH5 \
-    tb.dut.u_csrng_core.u_prim_mubi4_sync_read_int_state
+    `PATH.u_csrng_core.u_prim_mubi4_sync_read_int_state
 `define PATH6 \
-    tb.dut.u_csrng_core.u_csrng_ctr_drbg_upd
+    `PATH.u_csrng_core.u_csrng_ctr_drbg_upd
 `define PATH7 \
-    tb.dut.u_csrng_core.u_csrng_ctr_drbg_gen
+    `PATH.u_csrng_core.u_csrng_ctr_drbg_gen
 `define PATH8 \
-    tb.dut.u_csrng_core.u_csrng_main_sm
+    `PATH.u_csrng_core.u_csrng_main_sm
 
 interface csrng_assert_if
 (
@@ -62,7 +64,11 @@ interface csrng_assert_if
   endtask // assert_on
 
   task automatic assert_off_alert ();
-
+    $assertoff(0, `PATH.FpvSecCmCtrDrbgGenAlertCheck_A);
+    $assertoff(0, `PATH.FpvSecCmCtrDrbgUpdAlertCheck_A);
+    $assertoff(0, `PATH.gen_cnt_asserts[0].FpvSecCmCntAlertCheck_A);
+    $assertoff(0, `PATH.gen_cnt_asserts[1].FpvSecCmCntAlertCheck_A);
+    $assertoff(0, `PATH.gen_cnt_asserts[2].FpvSecCmCntAlertCheck_A);
   endtask // assert_off_alert
 
   task automatic assert_on_alert ();
