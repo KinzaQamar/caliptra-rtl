@@ -93,6 +93,11 @@ $REG_GEN $CALIPTRA_ROOT/src/aes/rdl/aes_clp_reg.rdl                   \
     --emit-rtl --rtl-output $CALIPTRA_ROOT/src/aes/rtl/generated       \
     --emit-dv  --dv-output  $CALIPTRA_ROOT/src/aes/dv/generated
 
+$REG_GEN $CALIPTRA_ROOT/src/csrng/rdl/csrng.rdl                        \
+    --emit-dv  --dv-output  $CALIPTRA_ROOT/src/csrng/dv/generated      \
+    --cov --cov-template-dir $CALIPTRA_ROOT/tools/templates/rdl/cov    \
+    --smp-template-dir $CALIPTRA_ROOT/tools/templates/rdl/smp
+
 $REG_GEN $CALIPTRA_ROOT/src/libs/rdl/interrupt_regs.rdl               \
     --emit-rtl --rtl-output $CALIPTRA_ROOT/src/libs/rtl/generated      \
     --emit-dv  --dv-output  $CALIPTRA_ROOT/src/libs/dv/generated
