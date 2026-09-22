@@ -28,7 +28,9 @@ package csrng_env_pkg;
   parameter int unsigned AHBDataWidth = 32;
   parameter int unsigned AHBAddrWidth = 32;
 
-  // parameters
+  // Total number of entropy blocks that a GEN command can generate are 4096.
+  parameter int unsigned GEN_BITS_CTR_WIDTH = 12;
+
   parameter uint     NUM_HW_APPS             = 2;
   parameter uint     HW_APP0                 = 0;
   parameter uint     HW_APP1                 = 1;

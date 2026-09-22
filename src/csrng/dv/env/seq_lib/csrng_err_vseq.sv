@@ -226,7 +226,7 @@ class csrng_err_vseq extends csrng_base_vseq;
           cmd_gen_cnt_sel: begin
             fld = csr.get_field_by_name(reg_field_name);
             path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.which_app_err_alert);
-            force_cnt_err(path, fld, 1'b1, 13);
+            force_cnt_err(path, fld, 1'b1, csrng_env_pkg::GEN_BITS_CTR_WIDTH);
           end
           drbg_upd_cnt_sel: begin
             fld = csr.get_field_by_name(reg_field_name);
